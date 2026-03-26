@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ruptura - Methodology</title>
+  <meta name="description" content="How Ruptura calculates your numbers. Data sources, methodology, known limitations, and academic context.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="ruptura-tokens.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #0C0F14;
+      color: #F0EDE8;
+      line-height: 1.7;
+      padding: 0;
+    }
+
+    .methodology-header {
+      text-align: center;
+      padding: 48px 24px 32px;
+      border-bottom: 1px solid #2A3040;
+    }
+
+    .methodology-header a {
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+
+    .methodology-header img {
+      height: 28px;
+      opacity: 0.9;
+    }
+
+    .methodology-header h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 600;
+      color: #F0EDE8;
+      margin-top: 8px;
+    }
+
+    .methodology-header p {
+      color: #9CA3AF;
+      font-size: 0.95rem;
+      margin-top: 8px;
+      max-width: 540px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .methodology-content {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    section {
+      margin-bottom: 48px;
+    }
+
+    h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #D4A054;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #2A3040;
+    }
+
+    h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #F0EDE8;
+      margin: 24px 0 8px;
+    }
+
+    p, li {
+      color: #C8C2B8;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+    }
+
+    ul, ol {
+      padding-left: 20px;
+      margin-bottom: 16px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    a {
+      color: #D4A054;
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: #E8A633;
+      text-decoration: underline;
+    }
+
+    .source-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      font-size: 0.9rem;
+    }
+
+    .source-table th {
+      text-align: left;
+      color: #9CA3AF;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-bottom: 1px solid #2A3040;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .source-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(42, 48, 64, 0.5);
+      color: #C8C2B8;
+      vertical-align: top;
+    }
+
+    .source-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .limitation-item {
+      background: rgba(42, 48, 64, 0.3);
+      border-left: 3px solid #D4A054;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .limitation-item p {
+      margin-bottom: 0;
+    }
+
+    .version-entry {
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(42, 48, 64, 0.5);
+    }
+
+    .version-entry:last-child {
+      border-bottom: none;
+    }
+
+    .version-date {
+      font-family: 'JetBrains Mono', monospace;
+      color: #D4A054;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #9CA3AF;
+      font-size: 0.9rem;
+      margin-bottom: 32px;
+    }
+
+    .back-link:hover {
+      color: #D4A054;
+    }
+
+    .formula-block {
+      background: rgba(42, 48, 64, 0.4);
+      border: 1px solid #2A3040;
+      border-radius: 6px;
+      padding: 16px;
+      margin: 12px 0 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: #C8C2B8;
+      overflow-x: auto;
+    }
+
+    .privacy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(74, 155, 127, 0.15);
+      border: 1px solid rgba(74, 155, 127, 0.3);
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin: 16px 0;
+      color: #4A9B7F;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+      .source-table { font-size: 0.8rem; }
+      .source-table th, .source-table td { padding: 6px 8px; }
+      .methodology-content { padding: 24px 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="methodology-header">
+    <a href="/econ" aria-label="Back to calculator">
+      <img src="ruptura_logo.svg?v=3" alt="Ruptura">
+    </a>
+    <h1>How We Calculate Your Numbers</h1>
+    <p>Transparent methodology for journalists, educators, and anyone who wants to verify before citing.</p>
+  </header>
+
+  <main class="methodology-content">
+
+    <a href="/econ" class="back-link">&larr; Back to calculator</a>
+
+    <!-- DATA SOURCES -->
+    <section id="data-sources">
+      <h2>Data Sources</h2>
+      <table class="source-table">
+        <thead>
+          <tr>
+            <th>Source</th>
+            <th>What We Use It For</th>
+            <th>Link</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Economic Policy Institute</td>
+            <td>Productivity-pay gap data (1979-2024)</td>
+            <td><a href="https://www.epi.org/productivity-pay-gap/" target="_blank" rel="noopener noreferrer">epi.org</a></td>
+          </tr>
+          <tr>
+            <td>Bureau of Labor Statistics (OEWS)</td>
+            <td>Occupational wage data by metro area and industry</td>
+            <td><a href="https://www.bls.gov/oes/" target="_blank" rel="noopener noreferrer">bls.gov/oes</a></td>
+          </tr>
+          <tr>
+            <td>Bureau of Labor Statistics (CPI)</td>
+            <td>Consumer price inflation, CPI-U-RS deflators</td>
+            <td><a href="https://www.bls.gov/cpi/" target="_blank" rel="noopener noreferrer">bls.gov/cpi</a></td>
+          </tr>
+          <tr>
+            <td>Bureau of Economic Analysis (RPP)</td>
+            <td>Regional Price Parities by state and metro</td>
+            <td><a href="https://www.bea.gov/data/prices-inflation/regional-price-parities-state-and-metro-area" target="_blank" rel="noopener noreferrer">bea.gov</a></td>
+          </tr>
+          <tr>
+            <td>Bureau of Economic Analysis (GDP by Industry)</td>
+            <td>Value-added per worker by industry and state</td>
+            <td><a href="https://www.bea.gov/data/gdp/gdp-industry" target="_blank" rel="noopener noreferrer">bea.gov</a></td>
+          </tr>
+          <tr>
+            <td>Census Bureau (ACS)</td>
+            <td>Housing cost trends, gross rent as % of income (GRAPI)</td>
+            <td><a href="https://www.census.gov/topics/housing.html" target="_blank" rel="noopener noreferrer">census.gov</a></td>
+          </tr>
+          <tr>
+            <td>HUD Fair Market Rents</td>
+            <td>Rent data by ZIP code</td>
+            <td><a href="https://www.huduser.gov/portal/datasets/fmr.html" target="_blank" rel="noopener noreferrer">huduser.gov</a></td>
+          </tr>
+          <tr>
+            <td>Federal Reserve (FRED)</td>
+            <td>Economic indicators, labor share data</td>
+            <td><a href="https://fred.stlouisfed.org/" target="_blank" rel="noopener noreferrer">fred.stlouisfed.org</a></td>
+          </tr>
+          <tr>
+            <td>Federal Reserve (SHED)</td>
+            <td>Survey of Household Economics and Decisionmaking</td>
+            <td><a href="https://www.federalreserve.gov/consumerscommunities/shed.htm" target="_blank" rel="noopener noreferrer">federalreserve.gov</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- CALCULATION METHODOLOGY -->
+    <section id="methodology">
+      <h2>Calculation Methodology</h2>
+
+      <h3>Productivity-Wage Gap (Impact Calculator)</h3>
+      <p>For each year of your career, we measure how much productivity outpaced wages using industry-specific data from BLS Labor Productivity and Costs. Different industries experience different dynamics: construction has nearly flat productivity growth, while tech and finance show large divergence.</p>
+      <p>We apply a <strong>conservative 25% share</strong> of the raw gap to your individual estimate. Not all productivity gains flow directly to wages; some go to capital investment, technology, and overhead. The full gap factor is shown in your results for transparency.</p>
+      <div class="formula-block">
+        Structural Benchmark = Your Income + (Income x Gap x Industry Modifier x 0.25)<br>
+        Capped at BEA value-added per worker for your industry and state
+      </div>
+
+      <h3>Market Comparison (Worth Gap Analyzer)</h3>
+      <p>Your market median starts with BLS occupational wage data for your metro area or state. We then adjust for:</p>
+      <ul>
+        <li><strong>Regional Price Parities (RPP)</strong> from BEA, reflecting local cost of living</li>
+        <li><strong>Experience normalization</strong> using a logarithmic model (growth factor 0.10) where industry-median tenure equals 1.0</li>
+        <li><strong>Occupation adjustment</strong> using BLS OEWS percentile data for your declared role level</li>
+      </ul>
+
+      <h3>Experience Growth Model</h3>
+      <p>The impact calculator uses a three-tier experience model reflecting BLS age-earnings data:</p>
+      <ul>
+        <li>Years 1-10: 2.5% per year (steep early-career growth)</li>
+        <li>Years 11-20: 1.0% per year (mid-career deceleration)</li>
+        <li>Years 21+: 0.2% per year (late-career near-stagnation)</li>
+      </ul>
+
+      <h3>Housing Burden</h3>
+      <p>Home price-to-income ratio uses national median data: 3.5x in 1985, approximately 5.5x today (FRED/NAR 2025). Rent burden uses Census ACS median gross rent as a percentage of income (GRAPI): 32.8% nationally.</p>
+
+      <h3>What "Structural Benchmark" Means</h3>
+      <p>This is a structural estimate, not a precise individual calculation. It applies the national and industry-level productivity-wage gap to your specific salary. Your actual value depends on your specific role, employer, and individual contributions. We call it a "benchmark" to signal that it is one lens among many for understanding your economic position.</p>
+    </section>
+
+    <!-- KNOWN LIMITATIONS -->
+    <section id="limitations">
+      <h2>Known Limitations</h2>
+
+      <div class="limitation-item">
+        <p><strong>National gap applied to individuals.</strong> We apply a national or industry-level productivity-wage gap to your individual salary. This is a structural benchmark, not a precise measure of what any specific employer owes a specific worker.</p>
+      </div>
+
+      <div class="limitation-item">
+        <p><strong>Deflator choice matters.</strong> EPI uses CPI-U-RS for wages and IPD for productivity. Using a single deflator closes roughly 40% of the apparent gap. We use EPI's methodology because it best captures the worker's experience of real purchasing power.</p>
+      </div>
+
+      <div class="limitation-item">
+        <p><strong>Compensation vs. wages.</strong> Total compensation (including health insurance, retirement contributions) has grown more than wages alone, though still less than productivity. Our primary calculations use wage data.</p>
+      </div>
+
+      <div class="limitation-item">
+        <p><strong>Industry productivity varies enormously.</strong> A worker in computer electronics manufacturing and a worker in food service experience completely different productivity dynamics. We use industry-specific indices where available, but sector groupings are still broad.</p>
+      </div>
+
+      <div class="limitation-item">
+        <p><strong>The 25% conservative factor is a judgment call.</strong> No peer-reviewed study recommends this specific fraction. We chose it as a deliberately conservative estimate of how much of the structural gap is attributable to individual workers. The full gap factor is always shown alongside for transparency.</p>
+      </div>
+
+      <div class="limitation-item">
+        <p><strong>Experience model is generic.</strong> Actual wage growth by experience varies significantly by education, industry, and region. Our three-tier model is an approximation based on BLS aggregate age-earnings data.</p>
+      </div>
+
+      <div class="limitation-item">
+        <p><strong>Housing data uses national medians.</strong> Your local market may differ substantially. State-level data is available for corporate ownership rates and price-to-income ratios.</p>
+      </div>
+    </section>
+
+    <!-- ACADEMIC CONTEXT -->
+    <section id="academic-context">
+      <h2>Academic Context</h2>
+      <p>The productivity-wage gap is a contested topic in economics. We follow <a href="https://www.epi.org/productivity-pay-gap/" target="_blank" rel="noopener noreferrer">EPI's methodology</a>, which shows a substantial divergence between net productivity and typical worker compensation since the late 1970s.</p>
+      <p>This is challenged by researchers at the <a href="https://www.heritage.org/" target="_blank" rel="noopener noreferrer">Heritage Foundation</a>, <a href="https://www.aei.org/" target="_blank" rel="noopener noreferrer">American Enterprise Institute</a>, and others who argue that using consistent deflators and total compensation (rather than wages alone) significantly narrows the gap. Feldstein (2008) and Pessoa &amp; Van Reenen (2013) provide detailed critiques.</p>
+      <p>We believe the gap is real and consequential. We also believe transparency matters more than advocacy. We encourage users to explore multiple perspectives and form their own conclusions.</p>
+    </section>
+
+    <!-- PRIVACY -->
+    <section id="privacy">
+      <h2>Privacy</h2>
+      <div class="privacy-badge">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Your data never leaves your session.
+      </div>
+      <p>Calculations currently run on our server. Your inputs are processed in memory and immediately discarded. Nothing is stored, logged, or transmitted to third parties. We are evaluating a future version that runs entirely in your browser for additional privacy assurance.</p>
+      <p>We proudly do not store or share your numbers, because we believe in <span style="color: #D4A054">informational</span> <span style="color: #D4A054">freedom</span>.</p>
+    </section>
+
+    <!-- VERSION HISTORY -->
+    <section id="version-history">
+      <h2>Version History</h2>
+
+      <div class="version-entry">
+        <span class="version-date">February 2026</span>
+        <p>Audit remediation release. Corrected Federal Reserve emergency savings figure from 47% to 37% (SHED 2023). Added qualifier to $50B wage theft estimate. Corrected housing price-to-income ratio from 7.5x to 5.5x (FRED/NAR 2025 data). Corrected rent burden from 37% to 32.8% (Census ACS median GRAPI). Added three-tier experience model (2.5% / 1.0% / 0.2%). Documented the 25% conservative productivity factor with full gap transparency. Renamed "Fair Value" to "Structural Benchmark." Replaced macro-level negotiation script with practical three-path framework. Added methodology page.</p>
+      </div>
+
+      <div class="version-entry">
+        <span class="version-date">2025</span>
+        <p>Initial release. Industry-specific productivity indices, RPP-based regional adjustment, OEWS occupation weighting, stratified benefits multiplier, CPI-U-RS deflation, gap decomposition, and data provenance system.</p>
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>

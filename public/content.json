@@ -1,0 +1,433 @@
+{
+  "meta": {
+    "title": "Ruptura — Your Economic Reality",
+    "description": "See how you've been affected. Anonymous. No tracking."
+  },
+
+  "opening": {
+    "lines": [
+      { "type": "welcome", "text": "Wanna see how valuable it is?" },
+      { "type": "normal", "text": "Our tool gives a personalized assessment based on industry-specific data." },
+      { "type": "prompt", "text": "Try it out below." }
+    ]
+  },
+
+  "form": {
+    "fields": {
+      "zip_code": {
+        "label": "ZIP Code",
+        "placeholder": "e.g. 10001",
+        "error": "Please enter a valid 5-digit ZIP code."
+      },
+      "current_wage": {
+        "label": "Current Annual Salary",
+        "placeholder": "e.g. 45,000",
+        "error": "Please enter your annual salary so we can calculate your value."
+      },
+      "start_salary": {
+        "label": "Starting Annual Salary",
+        "placeholder": "e.g. 30,000",
+        "error": "Please enter your starting salary."
+      },
+      "start_year": {
+        "label": "Year You Started Working",
+        "placeholder": "e.g. 2010",
+        "error": "Please enter a valid year between 1975 and the current year."
+      },
+      "industry": {
+        "label": "Industry (optional)",
+        "placeholder": "",
+        "error": "",
+        "options": [
+          { "value": "", "label": "-- Select your industry --" },
+          { "value": "admin_support", "label": "Administrative & Support Services" },
+          { "value": "agriculture_forestry", "label": "Agriculture, Forestry & Fishing" },
+          { "value": "arts_entertainment_sports", "label": "Arts, Entertainment & Sports" },
+          { "value": "chemical_petroleum_mfg", "label": "Chemical, Petroleum & Plastics Manufacturing" },
+          { "value": "construction_trades", "label": "Construction & Skilled Trades" },
+          { "value": "education_teaching", "label": "Education & Teaching" },
+          { "value": "electronics_computer_mfg", "label": "Electronics & Computer Manufacturing" },
+          { "value": "finance_banking", "label": "Finance, Banking & Insurance" },
+          { "value": "food_beverage_mfg", "label": "Food, Beverage & Tobacco Manufacturing" },
+          { "value": "government_public", "label": "Government & Public Administration" },
+          { "value": "healthcare_medical", "label": "Healthcare, Hospitals & Nursing" },
+          { "value": "hotels_restaurants", "label": "Hotels, Restaurants & Food Service" },
+          { "value": "media_telecom", "label": "Media, Telecom & Publishing" },
+          { "value": "metals_machinery_mfg", "label": "Metals, Machinery & Equipment Manufacturing" },
+          { "value": "mining_oil_gas", "label": "Mining, Oil & Gas" },
+          { "value": "other_manufacturing", "label": "Other Manufacturing (Textiles, Wood, Paper, Furniture)" },
+          { "value": "personal_services", "label": "Personal Services, Repair & Home Care" },
+          { "value": "professional_business", "label": "Professional & Business Services" },
+          { "value": "real_estate_property", "label": "Real Estate & Property" },
+          { "value": "retail_sales", "label": "Retail & Sales" },
+          { "value": "social_services", "label": "Social Services & Nonprofits" },
+          { "value": "tech_software", "label": "Tech, Software & IT" },
+          { "value": "transportation_delivery", "label": "Transportation, Delivery & Warehousing" },
+          { "value": "utilities_energy", "label": "Utilities (Electric, Water, Gas)" },
+          { "value": "wholesale_distribution", "label": "Wholesale & Distribution" },
+          { "value": "other", "label": "Other" }
+        ]
+      },
+      "role_level": {
+        "label": "Your Role Level (optional)",
+        "placeholder": "",
+        "error": ""
+      }
+    },
+    "industry_to_sector": {
+      "admin_support": "professional_services",
+      "agriculture_forestry": "national_average",
+      "arts_entertainment_sports": "national_average",
+      "chemical_petroleum_mfg": "manufacturing",
+      "construction_trades": "construction",
+      "education_teaching": "education",
+      "electronics_computer_mfg": "manufacturing",
+      "finance_banking": "finance",
+      "food_beverage_mfg": "manufacturing",
+      "government_public": "government",
+      "healthcare_medical": "healthcare",
+      "hotels_restaurants": "food_service",
+      "media_telecom": "tech",
+      "metals_machinery_mfg": "manufacturing",
+      "mining_oil_gas": "national_average",
+      "other_manufacturing": "manufacturing",
+      "personal_services": "national_average",
+      "professional_business": "professional_services",
+      "real_estate_property": "national_average",
+      "retail_sales": "retail",
+      "social_services": "national_average",
+      "tech_software": "tech",
+      "transportation_delivery": "transportation",
+      "utilities_energy": "national_average",
+      "wholesale_distribution": "national_average",
+      "other": "national_average"
+    },
+    "role_levels": {
+      "tech": [
+        { "value": "", "label": "-- Select role level --" },
+        { "value": "entry", "label": "Intern / Entry Level" },
+        { "value": "junior", "label": "Junior Developer / Analyst" },
+        { "value": "mid", "label": "Mid-Level Engineer / Designer" },
+        { "value": "senior", "label": "Senior / Team Lead" },
+        { "value": "exec", "label": "Director / VP / Executive" }
+      ],
+      "finance": [
+        { "value": "", "label": "-- Select role level --" },
+        { "value": "entry", "label": "Teller / Clerk" },
+        { "value": "junior", "label": "Associate / Processor" },
+        { "value": "mid", "label": "Analyst / Underwriter" },
+        { "value": "senior", "label": "Manager / AVP" },
+        { "value": "exec", "label": "Director / VP / Executive" }
+      ],
+      "manufacturing": [
+        { "value": "", "label": "-- Select role level --" },
+        { "value": "entry", "label": "Helper / General Laborer" },
+        { "value": "junior", "label": "Operator / Assembler" },
+        { "value": "mid", "label": "Lead / Skilled Tradesperson" },
+        { "value": "senior", "label": "Foreman / Supervisor" },
+        { "value": "exec", "label": "Plant Manager / Director" }
+      ],
+      "construction": [
+        { "value": "", "label": "-- Select role level --" },
+        { "value": "entry", "label": "Helper / Laborer" },
+        { "value": "junior", "label": "Journeyman / Installer" },
+        { "value": "mid", "label": "Lead / Skilled Tradesperson" },
+        { "value": "senior", "label": "Foreman / Superintendent" },
+        { "value": "exec", "label": "Project Manager / Director" }
+      ],
+      "retail": [
+        { "value": "", "label": "-- Select role level --" },
+        { "value": "entry", "label": "Cashier / Stocker" },
+        { "value": "junior", "label": "Sales Associate" },
+        { "value": "mid", "label": "Department Lead / Specialist" },
+        { "value": "senior", "label": "Assistant Manager" },
+        { "value": "exec", "label": "Store / District Manager" }
+      ],
+      "healthcare": [
+        { "value": "", "label": "-- Select role level --" },
+        { "value": "entry", "label": "Aide / Assistant" },
+        { "value": "junior", "label": "Technician / LPN" },
+        { "value": "mid", "label": "RN / Therapist" },
+        { "value": "senior", "label": "Specialist / NP / Supervisor" },
+        { "value": "exec", "label": "Physician / Administrator" }
+      ],
+      "food_service": [
+        { "value": "", "label": "-- Select role level --" },
+        { "value": "entry", "label": "Crew / Dishwasher" },
+        { "value": "junior", "label": "Cook / Host" },
+        { "value": "mid", "label": "Shift Lead / Head Cook" },
+        { "value": "senior", "label": "Assistant Manager" },
+        { "value": "exec", "label": "General Manager / Chef" }
+      ],
+      "education": [
+        { "value": "", "label": "-- Select role level --" },
+        { "value": "entry", "label": "Aide / Substitute" },
+        { "value": "junior", "label": "Paraprofessional / Tutor" },
+        { "value": "mid", "label": "Teacher / Instructor" },
+        { "value": "senior", "label": "Department Head / Coordinator" },
+        { "value": "exec", "label": "Principal / Dean" }
+      ],
+      "professional_services": [
+        { "value": "", "label": "-- Select role level --" },
+        { "value": "entry", "label": "Admin / Junior Associate" },
+        { "value": "junior", "label": "Associate / Specialist" },
+        { "value": "mid", "label": "Consultant / Senior Specialist" },
+        { "value": "senior", "label": "Manager / Senior Consultant" },
+        { "value": "exec", "label": "Partner / Director" }
+      ],
+      "transportation": [
+        { "value": "", "label": "-- Select role level --" },
+        { "value": "entry", "label": "Helper / Loader" },
+        { "value": "junior", "label": "Driver / Operator" },
+        { "value": "mid", "label": "CDL / Licensed Driver" },
+        { "value": "senior", "label": "Dispatcher / Supervisor" },
+        { "value": "exec", "label": "Fleet / Logistics Manager" }
+      ],
+      "government": [
+        { "value": "", "label": "-- Select role level --" },
+        { "value": "entry", "label": "Clerk (GS 1\u20135)" },
+        { "value": "junior", "label": "Technician (GS 6\u20139)" },
+        { "value": "mid", "label": "Analyst (GS 10\u201312)" },
+        { "value": "senior", "label": "Supervisor (GS 13\u201314)" },
+        { "value": "exec", "label": "Senior Executive (SES)" }
+      ],
+      "national_average": [
+        { "value": "", "label": "-- Select role level --" },
+        { "value": "entry", "label": "Entry Level" },
+        { "value": "junior", "label": "Junior / Associate" },
+        { "value": "mid", "label": "Mid-Level" },
+        { "value": "senior", "label": "Senior / Supervisor" },
+        { "value": "exec", "label": "Manager / Director" }
+      ]
+    },
+    "submit_text": "See Your Results",
+    "calculating_text": "Calculating...",
+    "privacy_note": "Anonymous. Nothing is stored or tracked."
+  },
+
+  "loading": {
+    "text": "Analyzing your numbers..."
+  },
+
+  "error": {
+    "heading": "We couldn't crunch your numbers right now.",
+    "body": "Try again in a moment. Your data wasn't saved or sent anywhere.",
+    "button": "Try Again"
+  },
+
+  "results": {
+    "card_label": "YOUR ECONOMIC IMPACT",
+    "severe_label": "YOUR UNPAID VALUE",
+    "edge_case_label": "YOUR ECONOMIC POSITION",
+    "hero_context_template": "in productivity your wages never reflected",
+    "secondary_context_template": "less per year than your labor produces",
+    "unpaid_labor_context": "of equivalent unpaid labor",
+    "value_generated_context": "total value you created since {{year}}",
+    "wages_received_context": "what you were actually paid",
+    "gap_claim": "That gap is yours. You earned it.",
+    "bar_difference_template": "+{{amount}}/year",
+    "context_rent_template": "That\u2019s {{months}} months of rent per year.",
+    "context_grocery_template": "That\u2019s roughly {{months}} months of groceries.",
+    "card_url": "econ.ruptura.co",
+    "fairly_compensated_label": "YOUR ECONOMIC POSITION",
+    "fairly_compensated": {
+      "hero_text": "Fairly Compensated",
+      "context": "Compensation meets or exceeds the productivity benchmark for this role, industry, and location."
+    },
+    "edge_case": {
+      "hero_text": "Ahead of the curve.",
+      "context": "Earnings are within range of productivity-adjusted value for this area."
+    },
+    "download_text": "Download Video",
+    "download_generating": "Generating...",
+    "download_success": "\u2713",
+    "share_text": "Show Someone",
+    "share_copied": "Link copied!",
+    "breakdown_trigger": "See Full Breakdown",
+    "methodology_trigger": "How We Calculated This",
+    "methodology_labels": {
+      "fair_value": "How We Calculate Your Structural Benchmark",
+      "assumptions": "Assumptions",
+      "sources": "Data Sources"
+    },
+    "breakdown_sections": {
+      "productivity_gap": "The Gap Between Your Output and Your Pay",
+      "worth_gap": "Your Pay vs. Local Market Rate",
+      "housing_cost": "How Homeownership Has Slipped Away",
+      "rent_burden": "How Rent Has Eaten Into Your Income",
+      "corporate_ownership": "Corporate Housing in Your State"
+    }
+  },
+
+  "download_card": {
+    "header": "YOUR LABOR, YOUR NUMBERS",
+    "tagline": "See what your work is really worth.",
+    "url": "econ.ruptura.co",
+    "watermark": "ruptura"
+  },
+
+  "phase3a": {
+    "stats": [
+      {
+        "number": "1,094%",
+        "text": "CEO compensation has skyrocketed 1,094% since 1978. Typical worker pay? Up 26%. Same economy. Different rules.",
+        "source": "Economic Policy Institute, 2025"
+      },
+      {
+        "number": "$50 billion",
+        "text": "An estimated $50 billion or more is stolen from workers each year through wage theft — unpaid overtime, minimum wage violations, and tip skimming. That exceeds all robberies, burglaries, and car thefts combined.",
+        "source": "Economic Policy Institute, 2017 methodology updated 2022; FBI UCR"
+      },
+      {
+        "number": "281 to 1",
+        "text": "A CEO at a top firm now makes 281 times what a typical worker earns. In 1965, it was 21 to 1.",
+        "source": "Economic Policy Institute, 2025"
+      },
+      {
+        "number": "37%",
+        "text": "37% of American adults would not cover a $400 emergency expense using cash or savings alone. The problem is not your budgeting. It is your paycheck.",
+        "source": "Federal Reserve SHED, 2023"
+      }
+    ],
+    "reframe": "They didn't ask your permission. Why are you asking for theirs?"
+  },
+
+  "phase3b": {
+    "blocks": [
+      {
+        "question": "Am I just being picky?",
+        "answer": "You're not being picky. The data shows you've earned {{worth_gap_annual}} less per year than workers with your experience in your area. That's not a feeling — it's a number."
+      },
+      {
+        "question": "But what if my employer can't afford raises?",
+        "answer": "National productivity has grown {{total_productivity_growth}} while wages grew just {{total_wage_growth}}. The money exists. The question is who gets it."
+      },
+      {
+        "question": "What if I get fired for asking?",
+        "answer": "For most private-sector workers, federal law (NLRA Section 7) protects your right to discuss wages and working conditions with coworkers. Retaliation is illegal, and there are federal processes to hold employers accountable. Government employees have separate protections under the Civil Service Reform Act. You have more legal backing than you think."
+      },
+      {
+        "question": "Does this actually work?",
+        "answer": "Union workers earn a 10% wage premium on average. In 2024, dockworkers won a 60% raise and Boeing machinists won 38%. The data is clear: asking works."
+      }
+    ]
+  },
+
+  "phase3c": {
+    "raise_heading": "What a raise would mean for your life",
+    "ahead_heading": "Your pay is competitive",
+    "ahead_context": "Your compensation meets or exceeds the market-adjusted rate for your experience and region. That\u2019s leverage \u2014 use it to help a coworker negotiate theirs.",
+    "bar_labels": {
+      "current": "Your current annual income",
+      "projected": "With the gap closed by half"
+    },
+    "half_gap_rationale": "Closing half the gap is a realistic first-step target. Research shows that workers who negotiate typically capture 30-60% of the difference between their current pay and market rate. Half is both achievable and meaningful.",
+    "projection_periods": ["Year 1", "5 Years", "10 Years"]
+  },
+
+  "wins": {
+    "label": "WHAT WORKERS WON IN 2024",
+    "heading": "What collective action has won",
+    "items": [
+      {
+        "text": "East and Gulf Coast dockworkers won a contract raising wages over 60% across six years — and job protections against automation.",
+        "source": "International Longshoremen's Association, 2024"
+      },
+      {
+        "text": "Boeing machinists struck and won a 38% general wage increase plus stronger retirement benefits.",
+        "source": "International Association of Machinists, 2024"
+      },
+      {
+        "text": "AT&T workers won a five-year contract with a 20% across-the-board raise after a 30-day CWA strike.",
+        "source": "Communications Workers of America, 2024"
+      },
+      {
+        "text": "Union representation grew by 463,000 workers in 2025 — 16.5 million covered, the highest number in 16 years.",
+        "source": "Bureau of Labor Statistics, 2025"
+      }
+    ]
+  },
+
+  "phase3d": {
+    "heading": "Take a Step",
+    "share": {
+      "button": "Show Someone",
+      "description": "Your story might be the push someone else needs."
+    },
+    "negotiation": {
+      "button": "GET YOUR SCRIPT",
+      "description": "A talking-points document built from your actual numbers. Something to have in hand.",
+      "section_labels": {
+        "opening": "The Number",
+        "evidence": "The Evidence",
+        "resolution": "The Ask",
+        "counters": "If They Push Back",
+        "framing": "How to Frame It",
+        "structural": "The Bigger Picture",
+        "position": "Your Position",
+        "maintenance": "What to Do Next"
+      }
+    },
+    "forum": {
+      "heading": "Join the Conversation",
+      "body": "We are building a place for workers to talk. Anonymous. No ads. No tracking.",
+      "button": "Forum Opening Soon",
+      "disabled": true
+    },
+    "closing": "The next move is yours."
+  },
+
+  "states": [
+    { "value": "AL", "label": "Alabama" },
+    { "value": "AK", "label": "Alaska" },
+    { "value": "AZ", "label": "Arizona" },
+    { "value": "AR", "label": "Arkansas" },
+    { "value": "CA", "label": "California" },
+    { "value": "CO", "label": "Colorado" },
+    { "value": "CT", "label": "Connecticut" },
+    { "value": "DE", "label": "Delaware" },
+    { "value": "DC", "label": "District of Columbia" },
+    { "value": "FL", "label": "Florida" },
+    { "value": "GA", "label": "Georgia" },
+    { "value": "HI", "label": "Hawaii" },
+    { "value": "ID", "label": "Idaho" },
+    { "value": "IL", "label": "Illinois" },
+    { "value": "IN", "label": "Indiana" },
+    { "value": "IA", "label": "Iowa" },
+    { "value": "KS", "label": "Kansas" },
+    { "value": "KY", "label": "Kentucky" },
+    { "value": "LA", "label": "Louisiana" },
+    { "value": "ME", "label": "Maine" },
+    { "value": "MD", "label": "Maryland" },
+    { "value": "MA", "label": "Massachusetts" },
+    { "value": "MI", "label": "Michigan" },
+    { "value": "MN", "label": "Minnesota" },
+    { "value": "MS", "label": "Mississippi" },
+    { "value": "MO", "label": "Missouri" },
+    { "value": "MT", "label": "Montana" },
+    { "value": "NE", "label": "Nebraska" },
+    { "value": "NV", "label": "Nevada" },
+    { "value": "NH", "label": "New Hampshire" },
+    { "value": "NJ", "label": "New Jersey" },
+    { "value": "NM", "label": "New Mexico" },
+    { "value": "NY", "label": "New York" },
+    { "value": "NC", "label": "North Carolina" },
+    { "value": "ND", "label": "North Dakota" },
+    { "value": "OH", "label": "Ohio" },
+    { "value": "OK", "label": "Oklahoma" },
+    { "value": "OR", "label": "Oregon" },
+    { "value": "PA", "label": "Pennsylvania" },
+    { "value": "RI", "label": "Rhode Island" },
+    { "value": "SC", "label": "South Carolina" },
+    { "value": "SD", "label": "South Dakota" },
+    { "value": "TN", "label": "Tennessee" },
+    { "value": "TX", "label": "Texas" },
+    { "value": "UT", "label": "Utah" },
+    { "value": "VT", "label": "Vermont" },
+    { "value": "VA", "label": "Virginia" },
+    { "value": "WA", "label": "Washington" },
+    { "value": "WV", "label": "West Virginia" },
+    { "value": "WI", "label": "Wisconsin" },
+    { "value": "WY", "label": "Wyoming" }
+  ]
+}

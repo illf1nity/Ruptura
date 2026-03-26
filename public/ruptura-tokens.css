@@ -1,0 +1,142 @@
+/* ============================================
+   RUPTURA DESIGN TOKENS — FINAL SYSTEM
+   Single source of truth for all Ruptura properties
+   ============================================ */
+
+@font-face {
+  font-family: 'Nirvana';
+  src: url('fonts/NIRVANA.TTF') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* ===== COLORS ===== */
+
+  /* Backgrounds — STRICT 3-TIER HIERARCHY */
+  --bg-primary: #0C0F14;     /* Body background, darkest */
+  --bg-surface: #161B24;     /* Panels, cards, inputs */
+  --bg-elevated: #1E2430;    /* Dropdowns, hovers, header */
+  --border-subtle: #2A3040;  /* Standard borders */
+
+  /* Text Hierarchy */
+  --text-primary: #F0EDE8;   /* Body text, headings */
+  --text-secondary: #9CA3AF; /* Labels, context */
+  --text-tertiary: #8A94A3;  /* Metadata — 4.6:1 on card bg, WCAG AA compliant */
+
+  /* Brand Gold — DISCIPLINED USAGE */
+  --accent-gold: #E8A633;
+  --accent-gold-light: #F5C04D;
+  --accent-gold-hover: #D4A054;
+  --accent-gold-glow: rgba(232, 166, 51, 0.18);
+  --accent-gold-hover-bg: rgba(232, 166, 51, 0.10);
+  --accent-gold-active-bg: rgba(232, 166, 51, 0.22);
+
+  /* Red — Gap, Urgency */
+  --gap-red: #E63946;
+  --gap-red-card: #F05454;
+  --gap-red-subtle: rgba(230, 57, 70, 0.14);
+
+  /* Green — Growth, Success */
+  --growth-green: #4A9B7F;
+  --growth-green-subtle: rgba(74, 155, 127, 0.12);
+
+  /* Cost Segments */
+  --cost-housing: #5B7BA5;
+
+  /* Gradients (logo-derived) */
+  --gradient-rupture: linear-gradient(180deg, #1a1a1a 0%, #E8A633 45%, #D4A054 65%, #E63946 100%);
+  --gradient-rupture-h: linear-gradient(90deg, #E8A633 0%, #D4A054 50%, #E63946 100%);
+  --gradient-gold-fire: linear-gradient(135deg, #F5C04D 0%, #E8A633 50%, #D4A054 100%);
+
+  /* ===== TYPOGRAPHY ===== */
+
+  /* Font Stacks */
+  --font-display: 'Jura', 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Jura', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-data: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+
+  /* Font Weights */
+  --weight-light: 300;
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Typography Scale — Mobile Base (320px-640px) */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 20px;
+  --text-xl: 28px;
+  --text-2xl: 36px;
+
+  /* Data Display Scale (monospace numbers) */
+  --data-sm: 16px;
+  --data-base: 24px;
+  --data-lg: 32px;
+  --data-xl: 36px;
+  --data-hero: 48px;
+
+  /* Line Heights */
+  --leading-tight: 1.2;
+  --leading-snug: 1.4;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.8;
+
+  /* ===== SPACING — 8PX RHYTHM ===== */
+  --space-0: 0;
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-7: 56px;
+  --space-8: 64px;
+  --space-10: 80px;
+  --space-15: 120px;
+  --space-20: 160px;
+
+  /* ===== ANIMATION ===== */
+
+  /* Durations */
+  --duration-fast: 100ms;
+  --duration-base: 200ms;
+  --duration-slow: 400ms;
+  --duration-reveal: 600ms;
+  --duration-emphasis: 800ms;
+
+  /* Easing Functions */
+  --ease-out: ease-out;
+  --ease-in-out: ease-in-out;
+}
+
+/* ===== RESPONSIVE TYPOGRAPHY ===== */
+
+/* Tablet (641px - 1024px) */
+@media (min-width: 641px) {
+  :root {
+    --text-xs: 13px;
+    --text-sm: 15px;
+    --text-base: 17px;
+    --text-lg: 22px;
+    --text-xl: 32px;
+    --text-2xl: 42px;
+    --data-hero: 56px;
+  }
+}
+
+/* Desktop (1025px+) */
+@media (min-width: 1025px) {
+  :root {
+    --text-xs: 13px;
+    --text-sm: 16px;
+    --text-base: 18px;
+    --text-lg: 24px;
+    --text-xl: 36px;
+    --text-2xl: 48px;
+    --data-hero: 64px;
+  }
+}
