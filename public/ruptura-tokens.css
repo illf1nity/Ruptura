@@ -1,0 +1,56 @@
+/* ============================================
+   RUPTURA DESIGN TOKENS
+   Shared design system for all Ruptura properties
+   ============================================ */
+
+:root {
+  /* Colors — Background */
+  --bg-primary: #0C0F14;
+  --bg-surface: #161B24;
+  --bg-elevated: #1E2430;
+  --border-subtle: #2A3040;
+
+  /* Colors — Text */
+  --text-primary: #F0EDE8;
+  --text-secondary: #9CA3AF;
+  --text-tertiary: #6B7280;
+  --text-tertiary-accessible: #7B8694;
+
+  /* Colors — Brand (Gold/Amber — matched to logo gradient) */
+  --accent-gold: #E8A633;
+  --accent-gold-light: #F5C04D;
+  --accent-gold-hover: #D4A054;
+  --accent-gold-glow: rgba(232, 166, 51, 0.18);
+  --accent-gold-hover-bg: rgba(232, 166, 51, 0.10);
+  --accent-gold-active-bg: rgba(232, 166, 51, 0.22);
+
+  /* Colors — Semantic (red matched to logo gradient) */
+  --gap-red: #E63946;
+  --gap-red-card: #F05454;
+  --gap-red-subtle: rgba(230, 57, 70, 0.14);
+  --growth-green: #4A9B7F;
+  --growth-green-subtle: rgba(74, 155, 127, 0.12);
+
+  /* Gradients — extracted from logo */
+  --gradient-rupture: linear-gradient(180deg, #1a1a1a 0%, #E8A633 45%, #D4A054 65%, #E63946 100%);
+  --gradient-rupture-h: linear-gradient(90deg, #E8A633 0%, #D4A054 50%, #E63946 100%);
+  --gradient-gold-fire: linear-gradient(135deg, #F5C04D 0%, #E8A633 50%, #D4A054 100%);
+
+  /* Typography */
+  --font-display: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-data: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+
+  /* Spacing (8px rhythm) */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-7: 56px;
+  --space-8: 64px;
+  --space-10: 80px;
+  --space-15: 120px;
+  --space-20: 160px;
+}

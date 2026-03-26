@@ -1,0 +1,433 @@
+{
+  "meta": {
+    "title": "Ruptura — Your Economic Reality",
+    "description": "See how you've been affected. Anonymous. No tracking."
+  },
+
+  "opening": {
+    "lines": [
+      { "type": "welcome", "text": "Your work creates real value." },
+      { "type": "normal", "text": "Every hour you work generates revenue, keeps systems running, helps people." },
+      { "type": "normal", "text": "You know this. Your employer knows this." },
+      { "type": "normal", "text": "The numbers prove it." },
+      { "type": "pause", "text": "" },
+      { "type": "normal", "text": "But those who profit from your work have captured the rewards." },
+      { "type": "normal", "text": "Wages haven't matched productivity in decades." },
+      { "type": "normal", "text": "Rent outpaces income. Surveillance replaces raises." },
+      { "type": "pause", "text": "" },
+      { "type": "normal", "text": "We built these tools to show you exactly how much value you create." },
+      { "type": "prompt", "text": "Enter your numbers below and see the real cost of working for someone else's profit." }
+    ]
+  },
+
+  "form": {
+    "fields": {
+      "zip_code": {
+        "label": "ZIP Code",
+        "placeholder": "e.g. 10001",
+        "error": "Please enter a valid 5-digit ZIP code."
+      },
+      "current_wage": {
+        "label": "Current Annual Salary",
+        "placeholder": "e.g. 45,000",
+        "error": "Please enter your annual salary so we can calculate your value."
+      },
+      "start_salary": {
+        "label": "Starting Annual Salary",
+        "placeholder": "e.g. 30,000",
+        "error": "Please enter your starting salary."
+      },
+      "start_year": {
+        "label": "Year You Started Working",
+        "placeholder": "e.g. 2010",
+        "error": "Please enter a valid year between 1975 and the current year."
+      },
+      "years_in_role": {
+        "label": "Years Doing This Kind of Work",
+        "placeholder": "e.g. 5",
+        "error": "Please enter a number between 0 and 50."
+      },
+      "industry": {
+        "label": "Industry (optional)",
+        "placeholder": "",
+        "error": "",
+        "options": [
+          { "value": "", "label": "— Select your industry —" },
+          { "optgroup": "Agriculture, Forestry, Fishing & Hunting", "options": [
+            { "value": "agriculture", "label": "Agriculture, Forestry, Fishing & Hunting" },
+            { "value": "crop_production", "label": "Crop Production" },
+            { "value": "animal_production", "label": "Animal Production" },
+            { "value": "forestry_logging", "label": "Forestry and Logging" },
+            { "value": "fishing_hunting_trapping", "label": "Fishing, Hunting and Trapping" },
+            { "value": "support_agriculture", "label": "Support Activities for Agriculture and Forestry" }
+          ]},
+          { "optgroup": "Mining, Quarrying & Oil/Gas Extraction", "options": [
+            { "value": "mining", "label": "Mining, Quarrying, and Oil and Gas Extraction" },
+            { "value": "oil_gas_extraction", "label": "Oil and Gas Extraction" },
+            { "value": "mining_except_oil_gas", "label": "Mining (except Oil and Gas)" },
+            { "value": "support_mining", "label": "Support Activities for Mining" }
+          ]},
+          { "optgroup": "Utilities", "options": [
+            { "value": "utilities", "label": "Utilities" }
+          ]},
+          { "optgroup": "Construction", "options": [
+            { "value": "construction", "label": "Construction" },
+            { "value": "construction_buildings", "label": "Construction of Buildings" },
+            { "value": "heavy_civil_engineering", "label": "Heavy and Civil Engineering Construction" },
+            { "value": "specialty_trade_contractors", "label": "Specialty Trade Contractors" }
+          ]},
+          { "optgroup": "Manufacturing", "options": [
+            { "value": "manufacturing", "label": "Manufacturing" },
+            { "value": "food_manufacturing", "label": "Food Manufacturing" },
+            { "value": "beverage_tobacco_mfg", "label": "Beverage and Tobacco Product Manufacturing" },
+            { "value": "textile_mills", "label": "Textile Mills" },
+            { "value": "textile_product_mills", "label": "Textile Product Mills" },
+            { "value": "apparel_manufacturing", "label": "Apparel Manufacturing" },
+            { "value": "leather_mfg", "label": "Leather and Allied Product Manufacturing" },
+            { "value": "wood_product_mfg", "label": "Wood Product Manufacturing" },
+            { "value": "paper_manufacturing", "label": "Paper Manufacturing" },
+            { "value": "printing_support", "label": "Printing and Related Support Activities" },
+            { "value": "petroleum_coal_mfg", "label": "Petroleum and Coal Products Manufacturing" },
+            { "value": "chemical_manufacturing", "label": "Chemical Manufacturing" },
+            { "value": "plastics_rubber_mfg", "label": "Plastics and Rubber Products Manufacturing" },
+            { "value": "nonmetallic_mineral_mfg", "label": "Nonmetallic Mineral Product Manufacturing" },
+            { "value": "primary_metal_mfg", "label": "Primary Metal Manufacturing" },
+            { "value": "fabricated_metal_mfg", "label": "Fabricated Metal Product Manufacturing" },
+            { "value": "machinery_manufacturing", "label": "Machinery Manufacturing" },
+            { "value": "computer_electronic_mfg", "label": "Computer and Electronic Product Manufacturing" },
+            { "value": "electrical_equipment_mfg", "label": "Electrical Equipment, Appliance, and Component Manufacturing" },
+            { "value": "transportation_equip_mfg", "label": "Transportation Equipment Manufacturing" },
+            { "value": "furniture_mfg", "label": "Furniture and Related Product Manufacturing" },
+            { "value": "miscellaneous_mfg", "label": "Miscellaneous Manufacturing" }
+          ]},
+          { "optgroup": "Wholesale Trade", "options": [
+            { "value": "wholesale_trade", "label": "Wholesale Trade" },
+            { "value": "wholesale_durable", "label": "Merchant Wholesalers, Durable Goods" },
+            { "value": "wholesale_nondurable", "label": "Merchant Wholesalers, Nondurable Goods" },
+            { "value": "wholesale_electronic_markets", "label": "Wholesale Electronic Markets and Agents and Brokers" }
+          ]},
+          { "optgroup": "Retail Trade", "options": [
+            { "value": "retail", "label": "Retail Trade" },
+            { "value": "motor_vehicle_dealers", "label": "Motor Vehicle and Parts Dealers" },
+            { "value": "furniture_home_stores", "label": "Furniture and Home Furnishings Stores" },
+            { "value": "electronics_appliance_stores", "label": "Electronics and Appliance Stores" },
+            { "value": "building_material_stores", "label": "Building Material and Garden Equipment Dealers" },
+            { "value": "food_beverage_stores", "label": "Food and Beverage Stores" },
+            { "value": "health_personal_care_stores", "label": "Health and Personal Care Stores" },
+            { "value": "gasoline_stations", "label": "Gasoline Stations" },
+            { "value": "clothing_stores", "label": "Clothing and Clothing Accessories Stores" },
+            { "value": "sporting_hobby_book_stores", "label": "Sporting Goods, Hobby, Book, and Music Stores" },
+            { "value": "general_merchandise_stores", "label": "General Merchandise Stores" },
+            { "value": "miscellaneous_store_retailers", "label": "Miscellaneous Store Retailers" },
+            { "value": "nonstore_retailers", "label": "Nonstore Retailers" }
+          ]},
+          { "optgroup": "Transportation & Warehousing", "options": [
+            { "value": "transportation", "label": "Transportation and Warehousing" },
+            { "value": "air_transportation", "label": "Air Transportation" },
+            { "value": "rail_transportation", "label": "Rail Transportation" },
+            { "value": "water_transportation", "label": "Water Transportation" },
+            { "value": "truck_transportation", "label": "Truck Transportation" },
+            { "value": "transit_ground_passenger", "label": "Transit and Ground Passenger Transportation" },
+            { "value": "pipeline_transportation", "label": "Pipeline Transportation" },
+            { "value": "scenic_sightseeing", "label": "Scenic and Sightseeing Transportation" },
+            { "value": "support_transportation", "label": "Support Activities for Transportation" },
+            { "value": "postal_service", "label": "Postal Service" },
+            { "value": "couriers_messengers", "label": "Couriers and Messengers" },
+            { "value": "warehousing_storage", "label": "Warehousing and Storage" }
+          ]},
+          { "optgroup": "Information", "options": [
+            { "value": "information", "label": "Information" },
+            { "value": "publishing", "label": "Publishing Industries (except Internet)" },
+            { "value": "motion_picture_sound", "label": "Motion Picture and Sound Recording Industries" },
+            { "value": "broadcasting", "label": "Broadcasting (except Internet)" },
+            { "value": "internet_publishing", "label": "Internet Publishing and Broadcasting" },
+            { "value": "telecommunications", "label": "Telecommunications" },
+            { "value": "data_processing_hosting", "label": "Data Processing, Hosting, and Related Services" },
+            { "value": "other_information_services", "label": "Other Information Services" }
+          ]},
+          { "optgroup": "Finance & Insurance", "options": [
+            { "value": "finance", "label": "Finance and Insurance" },
+            { "value": "monetary_authorities", "label": "Monetary Authorities - Central Bank" },
+            { "value": "credit_intermediation", "label": "Credit Intermediation and Related Activities" },
+            { "value": "securities_commodities", "label": "Securities, Commodity Contracts, and Related" },
+            { "value": "insurance_carriers", "label": "Insurance Carriers and Related Activities" },
+            { "value": "funds_trusts", "label": "Funds, Trusts, and Other Financial Vehicles" }
+          ]},
+          { "optgroup": "Real Estate & Rental/Leasing", "options": [
+            { "value": "real_estate_rental", "label": "Real Estate and Rental and Leasing" },
+            { "value": "real_estate", "label": "Real Estate" },
+            { "value": "rental_leasing_services", "label": "Rental and Leasing Services" },
+            { "value": "lessors_intangible_assets", "label": "Lessors of Nonfinancial Intangible Assets" }
+          ]},
+          { "optgroup": "Professional, Scientific & Technical Services", "options": [
+            { "value": "professional_services", "label": "Professional, Scientific, and Technical Services" }
+          ]},
+          { "optgroup": "Management of Companies", "options": [
+            { "value": "management_companies", "label": "Management of Companies and Enterprises" }
+          ]},
+          { "optgroup": "Administrative, Support & Waste Management", "options": [
+            { "value": "admin_support_waste", "label": "Administrative and Support and Waste Management" },
+            { "value": "admin_support_services", "label": "Administrative and Support Services" },
+            { "value": "waste_management", "label": "Waste Management and Remediation Services" }
+          ]},
+          { "optgroup": "Educational Services", "options": [
+            { "value": "education", "label": "Educational Services" }
+          ]},
+          { "optgroup": "Health Care & Social Assistance", "options": [
+            { "value": "healthcare", "label": "Health Care and Social Assistance" },
+            { "value": "ambulatory_health_care", "label": "Ambulatory Health Care Services" },
+            { "value": "hospitals", "label": "Hospitals" },
+            { "value": "nursing_residential_care", "label": "Nursing and Residential Care Facilities" },
+            { "value": "social_assistance", "label": "Social Assistance" }
+          ]},
+          { "optgroup": "Arts, Entertainment & Recreation", "options": [
+            { "value": "arts_entertainment", "label": "Arts, Entertainment, and Recreation" },
+            { "value": "performing_arts_sports", "label": "Performing Arts, Spectator Sports, and Related" },
+            { "value": "museums_historical_sites", "label": "Museums, Historical Sites, and Similar Institutions" },
+            { "value": "amusement_gambling_recreation", "label": "Amusement, Gambling, and Recreation Industries" }
+          ]},
+          { "optgroup": "Accommodation & Food Services", "options": [
+            { "value": "accommodation_food", "label": "Accommodation and Food Services" },
+            { "value": "accommodation", "label": "Accommodation" },
+            { "value": "food_service", "label": "Food Services and Drinking Places" }
+          ]},
+          { "optgroup": "Other Services", "options": [
+            { "value": "other_services", "label": "Other Services (except Public Administration)" },
+            { "value": "repair_maintenance", "label": "Repair and Maintenance" },
+            { "value": "personal_laundry_services", "label": "Personal and Laundry Services" },
+            { "value": "religious_civic_orgs", "label": "Religious, Grantmaking, Civic, Professional Organizations" },
+            { "value": "private_households", "label": "Private Households" }
+          ]},
+          { "optgroup": "Government", "options": [
+            { "value": "government", "label": "Government" }
+          ]},
+          { "value": "other", "label": "Other" }
+        ]
+      },
+      "current_rent": {
+        "label": "Monthly Rent (optional)",
+        "placeholder": "e.g. 1,500",
+        "error": ""
+      }
+    },
+    "submit_text": "See Your Results",
+    "calculating_text": "Calculating...",
+    "privacy_note": "Anonymous. Nothing is stored or tracked."
+  },
+
+  "loading": {
+    "text": "Analyzing your numbers..."
+  },
+
+  "error": {
+    "heading": "We couldn't crunch your numbers right now.",
+    "body": "Try again in a moment. Your data wasn't saved or sent anywhere.",
+    "button": "Try Again"
+  },
+
+  "results": {
+    "card_label": "YOUR ECONOMIC IMPACT",
+    "severe_label": "YOUR ECONOMIC LOSS",
+    "edge_case_label": "YOUR ECONOMIC POSITION",
+    "hero_context_template": "in productivity your wages never reflected",
+    "secondary_context_template": "less per year than your labor produces",
+    "unpaid_labor_context": "of equivalent unpaid labor",
+    "value_generated_context": "total value you created since {{year}}",
+    "wages_received_context": "what you were actually paid",
+    "gap_claim": "That gap is yours. You earned it.",
+    "bar_difference_template": "+{{amount}}/year",
+    "context_rent_template": "That\u2019s {{months}} months of rent per year.",
+    "context_grocery_template": "That\u2019s roughly {{months}} months of groceries.",
+    "card_url": "econ.ruptura.co",
+    "edge_case": {
+      "hero_text": "You're ahead of the curve.",
+      "context": "Your earnings are within range of your productivity-adjusted value. Here's what workers in your state typically face:"
+    },
+    "download_text": "Download",
+    "download_generating": "Generating...",
+    "download_success": "\u2713",
+    "share_text": "Show Someone",
+    "share_copied": "Link copied!",
+    "breakdown_trigger": "See Full Breakdown",
+    "methodology_trigger": "How We Calculated This",
+    "methodology_labels": {
+      "fair_value": "How We Calculate Fair Value",
+      "assumptions": "Assumptions",
+      "sources": "Data Sources"
+    },
+    "breakdown_sections": {
+      "productivity_gap": "The Gap Between Your Output and Your Pay",
+      "worth_gap": "Your Pay vs. Local Market Rate",
+      "housing_cost": "How Homeownership Has Slipped Away",
+      "rent_burden": "How Rent Has Eaten Into Your Income",
+      "corporate_ownership": "Corporate Housing in Your State"
+    }
+  },
+
+  "download_card": {
+    "header": "YOUR LABOR, YOUR NUMBERS",
+    "tagline": "See what your work is really worth.",
+    "url": "econ.ruptura.co",
+    "watermark": "ruptura"
+  },
+
+  "phase3a": {
+    "stats": [
+      {
+        "number": "160%",
+        "text": "— that's how much worker productivity has grown since 1979. Hourly pay grew just 24% in the same period.",
+        "source": "Economic Policy Institute, 2024"
+      },
+      {
+        "number": "$50 billion",
+        "text": "U.S. employers steal $50 billion in wages from workers every year — more than all robberies, burglaries, and car thefts combined.",
+        "source": "Economic Policy Institute"
+      },
+      {
+        "number": "80%",
+        "text": "Employers set the wages for 80% of U.S. workers. You take it or leave it.",
+        "source": "Treasury Dept. Report on Labor Market Competition"
+      },
+      {
+        "number": "47%",
+        "text": "47% of full-time workers cannot cover a $400 emergency. The problem is not your budgeting. It is your paycheck.",
+        "source": "Federal Reserve Economic Well-Being Report, 2023"
+      }
+    ],
+    "reframe": "They didn't ask your permission. Why are you asking for theirs?"
+  },
+
+  "phase3b": {
+    "blocks": [
+      {
+        "question": "Am I just being picky?",
+        "answer": "You're not being picky. The data shows you've earned {{worth_gap_annual}} less per year than workers with your experience in your area. That's not a feeling — it's a number."
+      },
+      {
+        "question": "But what if my employer can't afford raises?",
+        "answer": "National productivity has grown {{total_productivity_growth}} while wages grew just {{total_wage_growth}}. The money exists. The question is who gets it."
+      },
+      {
+        "question": "What if I get fired for asking?",
+        "answer": "Federal law (NLRA Section 7) protects your right to discuss wages and working conditions with coworkers. Retaliation for this is illegal. You have more protection than you think."
+      },
+      {
+        "question": "Does this actually work?",
+        "answer": "Workers who negotiate receive an average of 7.4% higher pay. Workers who negotiate collectively receive 10-25% more. The data is clear: asking works."
+      }
+    ]
+  },
+
+  "phase3c": {
+    "raise_heading": "What a raise would mean for your life",
+    "ahead_heading": "Your pay is competitive",
+    "ahead_context": "Your compensation meets or exceeds the market-adjusted rate for your experience and region. That\u2019s leverage \u2014 use it to help a coworker negotiate theirs.",
+    "bar_labels": {
+      "current": "Your current annual income",
+      "projected": "With the gap closed by half"
+    },
+    "projection_periods": ["Year 1", "5 Years", "10 Years"]
+  },
+
+  "wins": {
+    "label": "PROOF IT WORKS",
+    "heading": "What collective action has won",
+    "items": [
+      {
+        "text": "Newly unionized workers see an average 18% wage increase in their first contract.",
+        "source": "Economic Policy Institute, 2023"
+      },
+      {
+        "text": "UPS Teamsters won a $7.50/hour raise for part-time workers in 2023 — the largest contract in their history.",
+        "source": "Teamsters Local 705"
+      },
+      {
+        "text": "Starbucks workers who unionized won guaranteed minimum hours, scheduling improvements, and tip sharing.",
+        "source": "NLRB filings, 2023-2024"
+      },
+      {
+        "text": "Amazon warehouse workers in Staten Island voted to form the first Amazon union in U.S. history in 2022.",
+        "source": "Amazon Labor Union / NLRB"
+      }
+    ]
+  },
+
+  "phase3d": {
+    "heading": "Take a Step",
+    "share": {
+      "button": "Show Someone",
+      "description": "Your story might be the push someone else needs."
+    },
+    "negotiation": {
+      "button": "GET WHAT YOU'RE OWED",
+      "description": "A private, personalized script for your next conversation about pay.",
+      "section_labels": {
+        "opening": "Opening Statement",
+        "evidence": "Your Evidence",
+        "resolution": "Your Ask",
+        "counters": "If They Push Back"
+      }
+    },
+    "forum": {
+      "heading": "Join the Conversation",
+      "body": "We are building a place for workers to talk. Anonymous. No ads. No tracking.",
+      "button": "Forum Opening Soon",
+      "disabled": true
+    },
+    "closing": "Bookmark this page. Run your numbers again next year."
+  },
+
+  "states": [
+    { "value": "AL", "label": "Alabama" },
+    { "value": "AK", "label": "Alaska" },
+    { "value": "AZ", "label": "Arizona" },
+    { "value": "AR", "label": "Arkansas" },
+    { "value": "CA", "label": "California" },
+    { "value": "CO", "label": "Colorado" },
+    { "value": "CT", "label": "Connecticut" },
+    { "value": "DE", "label": "Delaware" },
+    { "value": "DC", "label": "District of Columbia" },
+    { "value": "FL", "label": "Florida" },
+    { "value": "GA", "label": "Georgia" },
+    { "value": "HI", "label": "Hawaii" },
+    { "value": "ID", "label": "Idaho" },
+    { "value": "IL", "label": "Illinois" },
+    { "value": "IN", "label": "Indiana" },
+    { "value": "IA", "label": "Iowa" },
+    { "value": "KS", "label": "Kansas" },
+    { "value": "KY", "label": "Kentucky" },
+    { "value": "LA", "label": "Louisiana" },
+    { "value": "ME", "label": "Maine" },
+    { "value": "MD", "label": "Maryland" },
+    { "value": "MA", "label": "Massachusetts" },
+    { "value": "MI", "label": "Michigan" },
+    { "value": "MN", "label": "Minnesota" },
+    { "value": "MS", "label": "Mississippi" },
+    { "value": "MO", "label": "Missouri" },
+    { "value": "MT", "label": "Montana" },
+    { "value": "NE", "label": "Nebraska" },
+    { "value": "NV", "label": "Nevada" },
+    { "value": "NH", "label": "New Hampshire" },
+    { "value": "NJ", "label": "New Jersey" },
+    { "value": "NM", "label": "New Mexico" },
+    { "value": "NY", "label": "New York" },
+    { "value": "NC", "label": "North Carolina" },
+    { "value": "ND", "label": "North Dakota" },
+    { "value": "OH", "label": "Ohio" },
+    { "value": "OK", "label": "Oklahoma" },
+    { "value": "OR", "label": "Oregon" },
+    { "value": "PA", "label": "Pennsylvania" },
+    { "value": "RI", "label": "Rhode Island" },
+    { "value": "SC", "label": "South Carolina" },
+    { "value": "SD", "label": "South Dakota" },
+    { "value": "TN", "label": "Tennessee" },
+    { "value": "TX", "label": "Texas" },
+    { "value": "UT", "label": "Utah" },
+    { "value": "VT", "label": "Vermont" },
+    { "value": "VA", "label": "Virginia" },
+    { "value": "WA", "label": "Washington" },
+    { "value": "WV", "label": "West Virginia" },
+    { "value": "WI", "label": "Wisconsin" },
+    { "value": "WY", "label": "Wyoming" }
+  ]
+}

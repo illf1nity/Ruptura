@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ruptura</title>
+  <meta name="description" content="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="econ.css">
+</head>
+<body>
+
+  <!-- SITE HEADER -->
+  <header class="site-header" id="site-header" role="banner">
+    <div class="header-inner">
+      <a href="/forum" class="header-forum-link" aria-label="Visit the Ruptura forum">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        <span>Forum</span>
+      </a>
+      <a href="/" class="header-logo-link" aria-label="Ruptura home">
+        <img src="ruptura_logo.svg?v=3" alt="Ruptura" class="header-logo">
+      </a>
+      <p class="header-slogan">Know your worth.<br>Claim it.</p>
+    </div>
+  </header>
+
+  <!-- OPENING STATEMENT -->
+  <section id="opening" class="opening-section" aria-label="Opening statement">
+    <!-- Populated from content.json by econ.js -->
+  </section>
+
+  <!-- TRUST BANNER -->
+  <div class="trust-banner" aria-label="Trust signals">
+    <div class="trust-stat">
+      <strong>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>Anonymous
+      </strong>
+      <span>No tracking. No accounts.</span>
+    </div>
+    <div class="trust-divider"></div>
+    <div class="trust-stat">
+      <strong>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>BLS Data
+      </strong>
+      <span>Government economic statistics</span>
+    </div>
+    <div class="trust-divider"></div>
+    <div class="trust-stat">
+      <strong>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>Open Source
+      </strong>
+      <span>Transparent calculations</span>
+    </div>
+  </div>
+
+  <!-- PHASE 1: INPUT FORM -->
+  <section id="phase1" class="phase-section phase-form" aria-label="Enter your information">
+    <form id="worker-form" novalidate>
+      <!-- Form Progress -->
+      <div class="form-progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="5">
+        <div class="form-progress-bar" id="form-progress-bar"></div>
+        <span class="form-progress-text"><span id="form-progress-count">0</span> of 5 fields complete</span>
+      </div>
+
+      <!-- Privacy Disclaimer (top of form, always visible) -->
+      <div class="privacy-banner" id="privacy-banner">
+        <div class="privacy-banner-inner">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <span id="privacy-note-text"></span>
+        </div>
+        <div class="privacy-detail-inner">
+          <p>Your data stays in your browser.</p>
+          <ul>
+            <li>No accounts, no stored information.</li>
+            <li>No cookies, no analytics, no tracking pixels.</li>
+            <li>Your ZIP code is used only to look up local cost-of-living data.</li>
+            <li>Calculations happen on our server but inputs are not logged.</li>
+            <li>No ads. No third-party scripts.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ZIP Code -->
+      <div class="form-field" data-field="zip_code">
+        <label class="form-label" for="zip_code">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <span data-label="zip_code"></span>
+        </label>
+        <input class="form-input" type="text" id="zip_code" name="zip_code" inputmode="numeric" maxlength="5" autocomplete="postal-code">
+        <span class="field-error" data-error="zip_code"></span>
+      </div>
+
+      <!-- Current Salary/Wage -->
+      <div class="form-field" data-field="current_wage">
+        <label class="form-label" for="current_wage">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          <span data-label="current_wage"></span>
+        </label>
+        <input class="form-input" type="text" id="current_wage" name="current_wage" inputmode="decimal" autocomplete="off">
+        <span class="field-error" data-error="current_wage"></span>
+      </div>
+
+      <!-- Starting Salary -->
+      <div class="form-field" data-field="start_salary">
+        <label class="form-label" for="start_salary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          <span data-label="start_salary"></span>
+        </label>
+        <input class="form-input" type="text" id="start_salary" name="start_salary" inputmode="decimal" autocomplete="off">
+        <span class="field-error" data-error="start_salary"></span>
+      </div>
+
+      <!-- Year Started Working -->
+      <div class="form-field" data-field="start_year">
+        <label class="form-label" for="start_year">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <span data-label="start_year"></span>
+        </label>
+        <input class="form-input" type="text" id="start_year" name="start_year" inputmode="numeric" maxlength="4" autocomplete="off">
+        <span class="field-error" data-error="start_year"></span>
+      </div>
+
+      <!-- Years Doing This Kind of Work -->
+      <div class="form-field" data-field="years_in_role">
+        <label class="form-label" for="years_in_role">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+          <span data-label="years_in_role"></span>
+        </label>
+        <input class="form-input" type="text" id="years_in_role" name="years_in_role" inputmode="numeric" maxlength="2" autocomplete="off">
+        <span class="field-error" data-error="years_in_role"></span>
+      </div>
+
+      <!-- Industry -->
+      <div class="form-field" data-field="industry">
+        <label class="form-label" for="industry">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+          <span data-label="industry"></span>
+        </label>
+        <select class="form-input form-select" id="industry" name="industry">
+          <!-- Options populated from content.json by econ.js -->
+        </select>
+        <span class="field-error" data-error="industry"></span>
+      </div>
+
+      <!-- Monthly Rent -->
+      <div class="form-field" data-field="current_rent">
+        <label class="form-label" for="current_rent">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <span data-label="current_rent"></span>
+        </label>
+        <input class="form-input" type="text" id="current_rent" name="current_rent" inputmode="decimal" autocomplete="off">
+        <span class="field-error" data-error="current_rent"></span>
+      </div>
+
+      <!-- Submit -->
+      <button class="btn-submit" type="submit" id="submit-btn"></button>
+    </form>
+  </section>
+
+  <!-- LOADING STATE -->
+  <div id="loading" class="loading-section" aria-label="Calculating results" aria-live="polite" role="status" hidden>
+    <div class="loading-bars">
+      <div class="loading-bar" style="--bar-width: 70%"></div>
+      <div class="loading-bar" style="--bar-width: 45%"></div>
+      <div class="loading-bar" style="--bar-width: 85%"></div>
+    </div>
+    <p class="loading-text" id="loading-text"></p>
+  </div>
+
+  <!-- ERROR STATE -->
+  <div id="error-state" class="error-section" role="alert" hidden>
+    <p class="error-heading" id="error-heading"></p>
+    <p class="error-body" id="error-body"></p>
+    <button class="btn-primary btn-centered" id="retry-btn"></button>
+  </div>
+
+  <!-- PHASE 2: RESULTS -->
+  <section id="phase2" class="phase-section phase-results" aria-label="Your results" hidden>
+    <div class="results-card" id="results-card">
+      <span class="card-label" id="card-label"></span>
+
+      <!-- Value Recognition Ceremony: Step 1 — Generated Value -->
+      <div class="value-generated" id="value-generated"></div>
+      <p class="value-generated-context" id="value-generated-context"></p>
+
+      <!-- Step 2 — Wages Received -->
+      <div class="wages-received" id="wages-received"></div>
+      <p class="wages-received-context" id="wages-received-context"></p>
+
+      <div class="card-divider"></div>
+
+      <!-- Step 3 — The Gap -->
+      <div class="hero-stat" id="hero-stat"></div>
+      <p class="hero-context" id="hero-context"></p>
+      <p class="gap-claim" id="gap-claim"></p>
+
+      <div class="card-divider"></div>
+      <div class="secondary-stat" id="secondary-stat"></div>
+      <p class="secondary-stat-context" id="secondary-stat-context"></p>
+
+      <!-- Survival Metrics: visceral translation of the gap -->
+      <div class="survival-metrics" id="survival-metrics" role="group" aria-label="Impact of your annual pay gap" hidden>
+        <div class="survival-metric">
+          <div class="survival-value" id="days-free-value"></div>
+          <div class="survival-label">days per year your employer keeps</div>
+        </div>
+        <div class="survival-divider"></div>
+        <div class="survival-metric">
+          <div class="survival-value" id="rent-equiv-value"></div>
+          <div class="survival-label">months of rent that could be yours</div>
+        </div>
+      </div>
+
+      <span class="card-url" id="card-url"></span>
+    </div>
+
+    <div class="card-actions">
+      <button class="btn-primary" id="download-btn" aria-label="Download results as image">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span id="download-btn-text"></span>
+      </button>
+      <button class="btn-secondary" id="share-btn" aria-label="Share your results">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+        <span id="share-btn-text"></span>
+      </button>
+    </div>
+
+    <button class="breakdown-trigger" id="breakdown-trigger" aria-expanded="false" aria-controls="breakdown-content">
+      <span id="breakdown-trigger-text"></span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    </button>
+    <div class="breakdown-content" id="breakdown-content">
+      <div class="breakdown-inner" id="breakdown-inner">
+        <!-- Rows populated by JS from API data -->
+      </div>
+    </div>
+
+    <button class="methodology-trigger" id="methodology-trigger" aria-expanded="false" aria-controls="methodology-content">
+      <span id="methodology-trigger-text"></span>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    </button>
+    <div class="methodology-content" id="methodology-content">
+      <div class="methodology-inner" id="methodology-inner">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- PRIMARY CTA — Immediately after results, before context -->
+    <div class="primary-cta" id="primary-cta" hidden>
+      <button class="btn-cta-collect" id="collect-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+        <span id="collect-btn-text"></span>
+      </button>
+      <p class="cta-subtext" id="cta-subtext">Get a personalized negotiation script backed by your numbers.</p>
+    </div>
+  </section>
+
+  <!-- COLLECTIVE ACTION WINS — Proof that workers win -->
+  <section id="wins-section" class="phase-section phase-wins" aria-label="What collective action has won" hidden>
+    <div class="wins-header">
+      <span class="wins-label" id="wins-label">PROOF IT WORKS</span>
+      <h2 class="wins-heading" id="wins-heading"></h2>
+    </div>
+    <div class="wins-grid" id="wins-container">
+      <!-- Win cards populated from content.json -->
+    </div>
+  </section>
+
+  <!-- PHASE 3D: Take a Step — Commitment Ladder (built dynamically by econ.js) -->
+  <section id="phase3d" class="phase-section phase-action" aria-label="Take action" hidden>
+    <h2 class="action-heading" id="action-heading"></h2>
+    <!-- Commitment ladder steps injected here by renderPhase3dShell() -->
+    <p class="closing-line" id="closing-line"></p>
+  </section>
+
+  <!-- PHASE 3A: Stat Cards -->
+  <section id="phase3a" class="phase-section phase-permission" aria-label="Context statistics" hidden>
+    <div id="stat-cards-container">
+      <!-- Stat cards populated from content.json -->
+    </div>
+    <p class="reframe-statement" id="reframe-statement"></p>
+  </section>
+
+  <!-- PHASE 3B: Validation -->
+  <section id="phase3b" class="phase-section phase-validation" aria-label="Addressing doubts" hidden>
+    <div id="validation-container">
+      <!-- Validation blocks populated from content.json -->
+    </div>
+  </section>
+
+  <!-- PHASE 3C: What Change Looks Like -->
+  <section id="phase3c" class="phase-section phase-change" aria-label="What change could mean" hidden>
+    <h2 class="change-heading" id="raise-heading"></h2>
+    <div class="bar-chart" id="bar-chart">
+      <div class="bar-row">
+        <div class="bar-label" id="bar-label-current"></div>
+        <div class="bar-track">
+          <div class="bar-fill current" id="bar-current"></div>
+          <span class="bar-value current" id="bar-value-current"></span>
+        </div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label" id="bar-label-projected"></div>
+        <div class="bar-track">
+          <div class="bar-fill projected" id="bar-projected"></div>
+          <span class="bar-value projected" id="bar-value-projected"></span>
+        </div>
+      </div>
+    </div>
+    <div class="bar-difference" id="bar-difference"></div>
+
+    <!-- Cost Translator: icon grid showing gap as months of rent/groceries/healthcare -->
+    <div id="cost-translator" class="cost-translator" hidden>
+      <div class="cost-tab-toggle" role="tablist" aria-label="Cost category">
+        <div class="frequency-slider cost-slider" data-pos="0"></div>
+        <button type="button" class="frequency-option cost-tab active" role="tab" aria-selected="true" data-tab="rent">Rent</button>
+        <button type="button" class="frequency-option cost-tab" role="tab" aria-selected="false" data-tab="food">Groceries</button>
+        <button type="button" class="frequency-option cost-tab" role="tab" aria-selected="false" data-tab="healthcare">Healthcare</button>
+      </div>
+      <div class="cost-icon-grid" id="cost-icon-grid" role="img" aria-label="Months your gap covers">
+        <!-- 12 icons populated by JS -->
+      </div>
+      <p class="cost-summary" id="cost-summary"></p>
+    </div>
+
+    <div class="projection-cards" id="projection-cards">
+      <!-- 3 projection cards populated by JS -->
+    </div>
+    <p class="context-line" id="context-line"></p>
+
+    <!-- Career Timeline: stacked bars per year -->
+    <div id="career-timeline-section" hidden>
+      <button class="breakdown-trigger career-timeline-trigger" id="career-timeline-trigger" aria-expanded="false" aria-controls="career-timeline-content">
+        <span>Your Career Timeline</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </button>
+      <div class="career-timeline-content" id="career-timeline-content">
+        <div class="career-timeline" id="career-timeline" role="img" aria-label="Career earnings timeline">
+          <!-- Rows populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Cost of Waiting: urgency visualization -->
+    <div id="urgency-section" class="urgency-section" hidden>
+      <h3 class="urgency-heading">The Cost of Waiting</h3>
+      <div class="urgency-chart" id="urgency-chart" role="img" aria-label="Cumulative cost of waiting to act">
+        <!-- SVG populated by JS -->
+      </div>
+      <div class="urgency-callouts" id="urgency-callouts">
+        <!-- 3 callout cards populated by JS -->
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Sticky Bottom Action Bar -->
+  <div id="sticky-bar" class="sticky-bar" hidden aria-label="Quick actions">
+    <button class="sticky-bar-btn btn-secondary" id="sticky-share-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+      <span>Share</span>
+    </button>
+    <button class="sticky-bar-btn btn-primary" id="sticky-script-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+      Get Script
+    </button>
+  </div>
+
+  <!-- HIDDEN: Downloadable card render target (off-screen, for html2canvas) -->
+  <div id="download-card" class="download-card-offscreen" aria-hidden="true">
+    <div class="dl-header" id="dl-header"></div>
+    <div class="dl-hero" id="dl-hero"></div>
+    <div class="dl-context" id="dl-context"></div>
+    <div class="dl-secondary" id="dl-secondary"></div>
+    <div class="dl-footer">
+      <div class="dl-url" id="dl-url"></div>
+      <div class="dl-tagline" id="dl-tagline"></div>
+    </div>
+    <div class="dl-watermark" id="dl-watermark"></div>
+  </div>
+
+  <!-- Inline content fallback for file:// protocol (where fetch is blocked by CORS) -->
+  <script id="content-data" type="application/json">
+{
+  "meta": {
+    "title": "Ruptura — Your Economic Reality",
+    "description": "See how you've been affected. Anonymous. No tracking."
+  },
+
+  "opening": {
+    "lines": [
+      { "type": "welcome", "text": "Your work creates real value." },
+      { "type": "normal", "text": "Every hour you work generates revenue, keeps systems running, helps people." },
+      { "type": "normal", "text": "You know this. Your employer knows this." },
+      { "type": "normal", "text": "The numbers prove it." },
+      { "type": "pause", "text": "" },
+      { "type": "normal", "text": "But those who profit from your work have captured the rewards." },
+      { "type": "normal", "text": "Wages haven't matched productivity in decades." },
+      { "type": "normal", "text": "Rent outpaces income. Surveillance replaces raises." },
+      { "type": "pause", "text": "" },
+      { "type": "normal", "text": "We built these tools to show you exactly how much value you create." },
+      { "type": "prompt", "text": "Enter your numbers below and see the real cost of working for someone else's profit." }
+    ]
+  },
+
+  "form": {
+    "fields": {
+      "zip_code": {
+        "label": "ZIP Code",
+        "placeholder": "e.g. 10001",
+        "error": "Please enter a valid 5-digit ZIP code."
+      },
+      "current_wage": {
+        "label": "Current Annual Salary",
+        "placeholder": "e.g. 45,000",
+        "error": "Please enter your annual salary so we can calculate your value."
+      },
+      "start_salary": {
+        "label": "Starting Annual Salary",
+        "placeholder": "e.g. 30,000",
+        "error": "Please enter your starting salary."
+      },
+      "start_year": {
+        "label": "Year You Started Working",
+        "placeholder": "e.g. 2010",
+        "error": "Please enter a valid year between 1975 and the current year."
+      },
+      "years_in_role": {
+        "label": "Years Doing This Kind of Work",
+        "placeholder": "e.g. 5",
+        "error": "Please enter a number between 0 and 50."
+      },
+      "industry": {
+        "label": "Industry (optional)",
+        "placeholder": "",
+        "error": "",
+        "options": [
+          { "value": "", "label": "— Select your industry —" },
+          { "optgroup": "Agriculture, Forestry, Fishing & Hunting", "options": [
+            { "value": "agriculture", "label": "Agriculture, Forestry, Fishing & Hunting" },
+            { "value": "crop_production", "label": "Crop Production" },
+            { "value": "animal_production", "label": "Animal Production" },
+            { "value": "forestry_logging", "label": "Forestry and Logging" },
+            { "value": "fishing_hunting_trapping", "label": "Fishing, Hunting and Trapping" },
+            { "value": "support_agriculture", "label": "Support Activities for Agriculture and Forestry" }
+          ]},
+          { "optgroup": "Mining, Quarrying & Oil/Gas Extraction", "options": [
+            { "value": "mining", "label": "Mining, Quarrying, and Oil and Gas Extraction" },
+            { "value": "oil_gas_extraction", "label": "Oil and Gas Extraction" },
+            { "value": "mining_except_oil_gas", "label": "Mining (except Oil and Gas)" },
+            { "value": "support_mining", "label": "Support Activities for Mining" }
+          ]},
+          { "optgroup": "Utilities", "options": [
+            { "value": "utilities", "label": "Utilities" }
+          ]},
+          { "optgroup": "Construction", "options": [
+            { "value": "construction", "label": "Construction" },
+            { "value": "construction_buildings", "label": "Construction of Buildings" },
+            { "value": "heavy_civil_engineering", "label": "Heavy and Civil Engineering Construction" },
+            { "value": "specialty_trade_contractors", "label": "Specialty Trade Contractors" }
+          ]},
+          { "optgroup": "Manufacturing", "options": [
+            { "value": "manufacturing", "label": "Manufacturing" },
+            { "value": "food_manufacturing", "label": "Food Manufacturing" },
+            { "value": "beverage_tobacco_mfg", "label": "Beverage and Tobacco Product Manufacturing" },
+            { "value": "textile_mills", "label": "Textile Mills" },
+            { "value": "textile_product_mills", "label": "Textile Product Mills" },
+            { "value": "apparel_manufacturing", "label": "Apparel Manufacturing" },
+            { "value": "leather_mfg", "label": "Leather and Allied Product Manufacturing" },
+            { "value": "wood_product_mfg", "label": "Wood Product Manufacturing" },
+            { "value": "paper_manufacturing", "label": "Paper Manufacturing" },
+            { "value": "printing_support", "label": "Printing and Related Support Activities" },
+            { "value": "petroleum_coal_mfg", "label": "Petroleum and Coal Products Manufacturing" },
+            { "value": "chemical_manufacturing", "label": "Chemical Manufacturing" },
+            { "value": "plastics_rubber_mfg", "label": "Plastics and Rubber Products Manufacturing" },
+            { "value": "nonmetallic_mineral_mfg", "label": "Nonmetallic Mineral Product Manufacturing" },
+            { "value": "primary_metal_mfg", "label": "Primary Metal Manufacturing" },
+            { "value": "fabricated_metal_mfg", "label": "Fabricated Metal Product Manufacturing" },
+            { "value": "machinery_manufacturing", "label": "Machinery Manufacturing" },
+            { "value": "computer_electronic_mfg", "label": "Computer and Electronic Product Manufacturing" },
+            { "value": "electrical_equipment_mfg", "label": "Electrical Equipment, Appliance, and Component Manufacturing" },
+            { "value": "transportation_equip_mfg", "label": "Transportation Equipment Manufacturing" },
+            { "value": "furniture_mfg", "label": "Furniture and Related Product Manufacturing" },
+            { "value": "miscellaneous_mfg", "label": "Miscellaneous Manufacturing" }
+          ]},
+          { "optgroup": "Wholesale Trade", "options": [
+            { "value": "wholesale_trade", "label": "Wholesale Trade" },
+            { "value": "wholesale_durable", "label": "Merchant Wholesalers, Durable Goods" },
+            { "value": "wholesale_nondurable", "label": "Merchant Wholesalers, Nondurable Goods" },
+            { "value": "wholesale_electronic_markets", "label": "Wholesale Electronic Markets and Agents and Brokers" }
+          ]},
+          { "optgroup": "Retail Trade", "options": [
+            { "value": "retail", "label": "Retail Trade" },
+            { "value": "motor_vehicle_dealers", "label": "Motor Vehicle and Parts Dealers" },
+            { "value": "furniture_home_stores", "label": "Furniture and Home Furnishings Stores" },
+            { "value": "electronics_appliance_stores", "label": "Electronics and Appliance Stores" },
+            { "value": "building_material_stores", "label": "Building Material and Garden Equipment Dealers" },
+            { "value": "food_beverage_stores", "label": "Food and Beverage Stores" },
+            { "value": "health_personal_care_stores", "label": "Health and Personal Care Stores" },
+            { "value": "gasoline_stations", "label": "Gasoline Stations" },
+            { "value": "clothing_stores", "label": "Clothing and Clothing Accessories Stores" },
+            { "value": "sporting_hobby_book_stores", "label": "Sporting Goods, Hobby, Book, and Music Stores" },
+            { "value": "general_merchandise_stores", "label": "General Merchandise Stores" },
+            { "value": "miscellaneous_store_retailers", "label": "Miscellaneous Store Retailers" },
+            { "value": "nonstore_retailers", "label": "Nonstore Retailers" }
+          ]},
+          { "optgroup": "Transportation & Warehousing", "options": [
+            { "value": "transportation", "label": "Transportation and Warehousing" },
+            { "value": "air_transportation", "label": "Air Transportation" },
+            { "value": "rail_transportation", "label": "Rail Transportation" },
+            { "value": "water_transportation", "label": "Water Transportation" },
+            { "value": "truck_transportation", "label": "Truck Transportation" },
+            { "value": "transit_ground_passenger", "label": "Transit and Ground Passenger Transportation" },
+            { "value": "pipeline_transportation", "label": "Pipeline Transportation" },
+            { "value": "scenic_sightseeing", "label": "Scenic and Sightseeing Transportation" },
+            { "value": "support_transportation", "label": "Support Activities for Transportation" },
+            { "value": "postal_service", "label": "Postal Service" },
+            { "value": "couriers_messengers", "label": "Couriers and Messengers" },
+            { "value": "warehousing_storage", "label": "Warehousing and Storage" }
+          ]},
+          { "optgroup": "Information", "options": [
+            { "value": "information", "label": "Information" },
+            { "value": "publishing", "label": "Publishing Industries (except Internet)" },
+            { "value": "motion_picture_sound", "label": "Motion Picture and Sound Recording Industries" },
+            { "value": "broadcasting", "label": "Broadcasting (except Internet)" },
+            { "value": "internet_publishing", "label": "Internet Publishing and Broadcasting" },
+            { "value": "telecommunications", "label": "Telecommunications" },
+            { "value": "data_processing_hosting", "label": "Data Processing, Hosting, and Related Services" },
+            { "value": "other_information_services", "label": "Other Information Services" }
+          ]},
+          { "optgroup": "Finance & Insurance", "options": [
+            { "value": "finance", "label": "Finance and Insurance" },
+            { "value": "monetary_authorities", "label": "Monetary Authorities - Central Bank" },
+            { "value": "credit_intermediation", "label": "Credit Intermediation and Related Activities" },
+            { "value": "securities_commodities", "label": "Securities, Commodity Contracts, and Related" },
+            { "value": "insurance_carriers", "label": "Insurance Carriers and Related Activities" },
+            { "value": "funds_trusts", "label": "Funds, Trusts, and Other Financial Vehicles" }
+          ]},
+          { "optgroup": "Real Estate & Rental/Leasing", "options": [
+            { "value": "real_estate_rental", "label": "Real Estate and Rental and Leasing" },
+            { "value": "real_estate", "label": "Real Estate" },
+            { "value": "rental_leasing_services", "label": "Rental and Leasing Services" },
+            { "value": "lessors_intangible_assets", "label": "Lessors of Nonfinancial Intangible Assets" }
+          ]},
+          { "optgroup": "Professional, Scientific & Technical Services", "options": [
+            { "value": "professional_services", "label": "Professional, Scientific, and Technical Services" }
+          ]},
+          { "optgroup": "Management of Companies", "options": [
+            { "value": "management_companies", "label": "Management of Companies and Enterprises" }
+          ]},
+          { "optgroup": "Administrative, Support & Waste Management", "options": [
+            { "value": "admin_support_waste", "label": "Administrative and Support and Waste Management" },
+            { "value": "admin_support_services", "label": "Administrative and Support Services" },
+            { "value": "waste_management", "label": "Waste Management and Remediation Services" }
+          ]},
+          { "optgroup": "Educational Services", "options": [
+            { "value": "education", "label": "Educational Services" }
+          ]},
+          { "optgroup": "Health Care & Social Assistance", "options": [
+            { "value": "healthcare", "label": "Health Care and Social Assistance" },
+            { "value": "ambulatory_health_care", "label": "Ambulatory Health Care Services" },
+            { "value": "hospitals", "label": "Hospitals" },
+            { "value": "nursing_residential_care", "label": "Nursing and Residential Care Facilities" },
+            { "value": "social_assistance", "label": "Social Assistance" }
+          ]},
+          { "optgroup": "Arts, Entertainment & Recreation", "options": [
+            { "value": "arts_entertainment", "label": "Arts, Entertainment, and Recreation" },
+            { "value": "performing_arts_sports", "label": "Performing Arts, Spectator Sports, and Related" },
+            { "value": "museums_historical_sites", "label": "Museums, Historical Sites, and Similar Institutions" },
+            { "value": "amusement_gambling_recreation", "label": "Amusement, Gambling, and Recreation Industries" }
+          ]},
+          { "optgroup": "Accommodation & Food Services", "options": [
+            { "value": "accommodation_food", "label": "Accommodation and Food Services" },
+            { "value": "accommodation", "label": "Accommodation" },
+            { "value": "food_service", "label": "Food Services and Drinking Places" }
+          ]},
+          { "optgroup": "Other Services", "options": [
+            { "value": "other_services", "label": "Other Services (except Public Administration)" },
+            { "value": "repair_maintenance", "label": "Repair and Maintenance" },
+            { "value": "personal_laundry_services", "label": "Personal and Laundry Services" },
+            { "value": "religious_civic_orgs", "label": "Religious, Grantmaking, Civic, Professional Organizations" },
+            { "value": "private_households", "label": "Private Households" }
+          ]},
+          { "optgroup": "Government", "options": [
+            { "value": "government", "label": "Government" }
+          ]},
+          { "value": "other", "label": "Other" }
+        ]
+      },
+      "current_rent": {
+        "label": "Monthly Rent (optional)",
+        "placeholder": "e.g. 1,500",
+        "error": ""
+      }
+    },
+    "submit_text": "See Your Results",
+    "calculating_text": "Calculating...",
+    "privacy_note": "Anonymous. Nothing is stored or tracked."
+  },
+
+  "loading": {
+    "text": "Analyzing your numbers..."
+  },
+
+  "error": {
+    "heading": "We couldn't crunch your numbers right now.",
+    "body": "Try again in a moment. Your data wasn't saved or sent anywhere.",
+    "button": "Try Again"
+  },
+
+  "results": {
+    "card_label": "YOUR ECONOMIC IMPACT",
+    "severe_label": "YOUR ECONOMIC LOSS",
+    "edge_case_label": "YOUR ECONOMIC POSITION",
+    "hero_context_template": "in productivity your wages never reflected",
+    "secondary_context_template": "less per year than your labor produces",
+    "unpaid_labor_context": "of equivalent unpaid labor",
+    "value_generated_context": "total value you created since {{year}}",
+    "wages_received_context": "what you were actually paid",
+    "gap_claim": "That gap is yours. You earned it.",
+    "bar_difference_template": "+{{amount}}/year",
+    "context_rent_template": "That\u2019s {{months}} months of rent per year.",
+    "context_grocery_template": "That\u2019s roughly {{months}} months of groceries.",
+    "card_url": "econ.ruptura.co",
+    "edge_case": {
+      "hero_text": "You're ahead of the curve.",
+      "context": "Your earnings are within range of your productivity-adjusted value. Here's what workers in your state typically face:"
+    },
+    "download_text": "Download",
+    "download_generating": "Generating...",
+    "download_success": "\u2713",
+    "share_text": "Show Someone",
+    "share_copied": "Link copied!",
+    "breakdown_trigger": "See Full Breakdown",
+    "methodology_trigger": "How We Calculated This",
+    "methodology_labels": {
+      "fair_value": "How We Calculate Fair Value",
+      "assumptions": "Assumptions",
+      "sources": "Data Sources"
+    },
+    "breakdown_sections": {
+      "productivity_gap": "The Gap Between Your Output and Your Pay",
+      "worth_gap": "Your Pay vs. Local Market Rate",
+      "housing_cost": "How Homeownership Has Slipped Away",
+      "rent_burden": "How Rent Has Eaten Into Your Income",
+      "corporate_ownership": "Corporate Housing in Your State"
+    }
+  },
+
+  "download_card": {
+    "header": "YOUR LABOR, YOUR NUMBERS",
+    "tagline": "See what your work is really worth.",
+    "url": "econ.ruptura.co",
+    "watermark": "ruptura"
+  },
+
+  "phase3a": {
+    "stats": [
+      {
+        "number": "160%",
+        "text": "— that's how much worker productivity has grown since 1979. Hourly pay grew just 24% in the same period.",
+        "source": "Economic Policy Institute, 2024"
+      },
+      {
+        "number": "$50 billion",
+        "text": "U.S. employers steal $50 billion in wages from workers every year — more than all robberies, burglaries, and car thefts combined.",
+        "source": "Economic Policy Institute"
+      },
+      {
+        "number": "80%",
+        "text": "Employers set the wages for 80% of U.S. workers. You take it or leave it.",
+        "source": "Treasury Dept. Report on Labor Market Competition"
+      },
+      {
+        "number": "47%",
+        "text": "47% of full-time workers cannot cover a $400 emergency. The problem is not your budgeting. It is your paycheck.",
+        "source": "Federal Reserve Economic Well-Being Report, 2023"
+      }
+    ],
+    "reframe": "They didn't ask your permission. Why are you asking for theirs?"
+  },
+
+  "phase3b": {
+    "blocks": [
+      {
+        "question": "Am I just being picky?",
+        "answer": "You're not being picky. The data shows you've earned {{worth_gap_annual}} less per year than workers with your experience in your area. That's not a feeling — it's a number."
+      },
+      {
+        "question": "But what if my employer can't afford raises?",
+        "answer": "National productivity has grown {{total_productivity_growth}} while wages grew just {{total_wage_growth}}. The money exists. The question is who gets it."
+      },
+      {
+        "question": "What if I get fired for asking?",
+        "answer": "Federal law (NLRA Section 7) protects your right to discuss wages and working conditions with coworkers. Retaliation for this is illegal. You have more protection than you think."
+      },
+      {
+        "question": "Does this actually work?",
+        "answer": "Workers who negotiate receive an average of 7.4% higher pay. Workers who negotiate collectively receive 10-25% more. The data is clear: asking works."
+      }
+    ]
+  },
+
+  "phase3c": {
+    "raise_heading": "What a raise would mean for your life",
+    "ahead_heading": "Your pay is competitive",
+    "ahead_context": "Your compensation meets or exceeds the market-adjusted rate for your experience and region. That\u2019s leverage \u2014 use it to help a coworker negotiate theirs.",
+    "bar_labels": {
+      "current": "Your current annual income",
+      "projected": "With the gap closed by half"
+    },
+    "projection_periods": ["Year 1", "5 Years", "10 Years"]
+  },
+
+  "wins": {
+    "label": "PROOF IT WORKS",
+    "heading": "What collective action has won",
+    "items": [
+      {
+        "text": "Newly unionized workers see an average 18% wage increase in their first contract.",
+        "source": "Economic Policy Institute, 2023"
+      },
+      {
+        "text": "UPS Teamsters won a $7.50/hour raise for part-time workers in 2023 — the largest contract in their history.",
+        "source": "Teamsters Local 705"
+      },
+      {
+        "text": "Starbucks workers who unionized won guaranteed minimum hours, scheduling improvements, and tip sharing.",
+        "source": "NLRB filings, 2023-2024"
+      },
+      {
+        "text": "Amazon warehouse workers in Staten Island voted to form the first Amazon union in U.S. history in 2022.",
+        "source": "Amazon Labor Union / NLRB"
+      }
+    ]
+  },
+
+  "phase3d": {
+    "heading": "Take a Step",
+    "share": {
+      "button": "Show Someone",
+      "description": "Your story might be the push someone else needs."
+    },
+    "negotiation": {
+      "button": "GET WHAT YOU'RE OWED",
+      "description": "A private, personalized script for your next conversation about pay.",
+      "section_labels": {
+        "opening": "Opening Statement",
+        "evidence": "Your Evidence",
+        "resolution": "Your Ask",
+        "counters": "If They Push Back"
+      }
+    },
+    "forum": {
+      "heading": "Join the Conversation",
+      "body": "We are building a place for workers to talk. Anonymous. No ads. No tracking.",
+      "button": "Forum Opening Soon",
+      "disabled": true
+    },
+    "closing": "Bookmark this page. Run your numbers again next year."
+  },
+
+  "states": [
+    { "value": "AL", "label": "Alabama" },
+    { "value": "AK", "label": "Alaska" },
+    { "value": "AZ", "label": "Arizona" },
+    { "value": "AR", "label": "Arkansas" },
+    { "value": "CA", "label": "California" },
+    { "value": "CO", "label": "Colorado" },
+    { "value": "CT", "label": "Connecticut" },
+    { "value": "DE", "label": "Delaware" },
+    { "value": "DC", "label": "District of Columbia" },
+    { "value": "FL", "label": "Florida" },
+    { "value": "GA", "label": "Georgia" },
+    { "value": "HI", "label": "Hawaii" },
+    { "value": "ID", "label": "Idaho" },
+    { "value": "IL", "label": "Illinois" },
+    { "value": "IN", "label": "Indiana" },
+    { "value": "IA", "label": "Iowa" },
+    { "value": "KS", "label": "Kansas" },
+    { "value": "KY", "label": "Kentucky" },
+    { "value": "LA", "label": "Louisiana" },
+    { "value": "ME", "label": "Maine" },
+    { "value": "MD", "label": "Maryland" },
+    { "value": "MA", "label": "Massachusetts" },
+    { "value": "MI", "label": "Michigan" },
+    { "value": "MN", "label": "Minnesota" },
+    { "value": "MS", "label": "Mississippi" },
+    { "value": "MO", "label": "Missouri" },
+    { "value": "MT", "label": "Montana" },
+    { "value": "NE", "label": "Nebraska" },
+    { "value": "NV", "label": "Nevada" },
+    { "value": "NH", "label": "New Hampshire" },
+    { "value": "NJ", "label": "New Jersey" },
+    { "value": "NM", "label": "New Mexico" },
+    { "value": "NY", "label": "New York" },
+    { "value": "NC", "label": "North Carolina" },
+    { "value": "ND", "label": "North Dakota" },
+    { "value": "OH", "label": "Ohio" },
+    { "value": "OK", "label": "Oklahoma" },
+    { "value": "OR", "label": "Oregon" },
+    { "value": "PA", "label": "Pennsylvania" },
+    { "value": "RI", "label": "Rhode Island" },
+    { "value": "SC", "label": "South Carolina" },
+    { "value": "SD", "label": "South Dakota" },
+    { "value": "TN", "label": "Tennessee" },
+    { "value": "TX", "label": "Texas" },
+    { "value": "UT", "label": "Utah" },
+    { "value": "VT", "label": "Vermont" },
+    { "value": "VA", "label": "Virginia" },
+    { "value": "WA", "label": "Washington" },
+    { "value": "WV", "label": "West Virginia" },
+    { "value": "WI", "label": "Wisconsin" },
+    { "value": "WY", "label": "Wyoming" }
+  ]
+}
+  </script>
+
+  <script src="econ.js" defer></script>
+  <script src="video-card.js" defer></script>
+</body>
+</html>

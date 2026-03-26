@@ -6,10 +6,10 @@ node_modules/
 *.db-shm
 *.db-wal
 
-# Environment (contains API keys — NEVER commit)
+# Environment
 .env
-.env.*
-!.env.example
+.env.local
+.env.production
 
 # OS files
 .DS_Store
@@ -29,12 +29,3 @@ ECONOMIC_BALLER_REVIEW.md
 ECONOMIC_BALLER_REVIEW_V2.md
 IMPLEMENTATION_PLAN.md
 LOGO_REVIEW_AND_INTEGRATION_PLAN.md
-DESIGN_SPEC_V2.css
-
-# Test artifacts
-e2e-screenshots/
-e2e-test.mjs
-test/
-
-# Windows artifacts
-nul
