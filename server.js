@@ -1,23 +1,103 @@
+require('dotenv').config();
+
+/**
+ * RUPTURA — Server Entry Point
+ * ==============================
+ * Express 5 server with route mounting and static file serving.
+ *
+ * Route modules:
+ *   routes/econ.js   — Economic calculator (impact, worth-gap, negotiation, local-data)
+ *   routes/data.js   — Public data APIs (CPI, yearly indicators, HUD rent, map)
+ *   routes/legacy.js — Solidarity Net endpoints (collectives, petitions, buildings, etc.)
+ *
+ * Service modules:
+ *   services/govApi.js          — BLS + HUD API wrappers
+ *   services/scraping.js        — Change.org + Telegram scrapers
+ *   services/calculationService.js — Economic calculations
+ *   services/wageData.js        — BLS wage data by MSA/state
+ */
+
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const path = require('path');
-const https = require('https');
 const { getDatabase, YEARLY_ECONOMIC_DATA, STATE_META } = require('./db');
+const { fetchCPIData, fetchHUDRentData, fetchHUDStateData, refreshLiveData } = require('./services/govApi');
+const { fetchChangeOrgData, isValidChangeOrgUrl, isValidTelegramUrl } = require('./services/scraping');
+const createEconRouter = require('./routes/econ');
+const createDataRouter = require('./routes/data');
+const createLegacyRouter = require('./routes/legacy');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// ============================================
+// MIDDLEWARE
+// ============================================
 
-// Serve static files (the index.html frontend)
-app.use(express.static(path.join(__dirname)));
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      connectSrc: ["'self'"],
+      mediaSrc: ["'self'", "blob:"],
+      workerSrc: ["'self'", "blob:"],
+    }
+  }
+}));
 
-// Initialize database
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGIN || false,
+  methods: ['GET', 'POST'],
+}));
+app.use(express.json({ limit: '10kb' }));
+
+// Rate limiting — general API: 100 requests per 15 minutes per IP
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Please try again in a few minutes.' },
+  skip: (req) => process.env.NODE_ENV === 'test',
+});
+app.use('/api/', apiLimiter);
+
+// Stricter limit for write endpoints: 10 per minute per IP
+const writeLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many submissions. Please slow down.' },
+});
+app.use('/api/sentiment/vote', writeLimiter);
+app.use('/api/reports', writeLimiter);
+app.use('/api/buildings', writeLimiter);
+app.use('/api/worker-collectives', writeLimiter);
+app.use('/api/petitions', writeLimiter);
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ============================================
+// DATABASE
+// ============================================
+
 const db = getDatabase();
 
-// Helper to format relative time from a timestamp
+// ============================================
+// HELPERS
+// ============================================
+
+/**
+ * Format a timestamp as relative time (e.g. "5m ago", "3d ago")
+ */
 function timeAgo(dateStr) {
   const now = new Date();
   const date = new Date(dateStr);
@@ -34,875 +114,240 @@ function timeAgo(dateStr) {
   return `${diffWeeks} week${diffWeeks > 1 ? 's' : ''} ago`;
 }
 
-// ============================================
-// CHANGE.ORG SCRAPING
-// ============================================
+/**
+ * USPS 3-digit ZIP prefix → state code
+ * Source: USPS Publication 65, Appendix A
+ * Covers all 50 states + DC. When local_data has no match for a ZIP,
+ * this gives us a reliable state code for RPP and wage lookups.
+ */
+const ZIP_PREFIX_TO_STATE = {
+  // CT
+  '060': 'CT', '061': 'CT', '062': 'CT', '063': 'CT', '064': 'CT', '065': 'CT', '066': 'CT', '067': 'CT', '068': 'CT', '069': 'CT',
+  // MA
+  '010': 'MA', '011': 'MA', '012': 'MA', '013': 'MA', '014': 'MA', '015': 'MA', '016': 'MA', '017': 'MA', '018': 'MA', '019': 'MA',
+  '020': 'MA', '021': 'MA', '022': 'MA', '023': 'MA', '024': 'MA', '025': 'MA', '026': 'MA', '027': 'MA',
+  // RI
+  '028': 'RI', '029': 'RI',
+  // NH
+  '030': 'NH', '031': 'NH', '032': 'NH', '033': 'NH', '034': 'NH', '035': 'NH', '036': 'NH', '037': 'NH', '038': 'NH',
+  // ME
+  '039': 'ME', '040': 'ME', '041': 'ME', '042': 'ME', '043': 'ME', '044': 'ME', '045': 'ME', '046': 'ME', '047': 'ME', '048': 'ME', '049': 'ME',
+  // VT
+  '050': 'VT', '051': 'VT', '052': 'VT', '053': 'VT', '054': 'VT', '056': 'VT', '057': 'VT', '058': 'VT', '059': 'VT',
+  // NJ
+  '070': 'NJ', '071': 'NJ', '072': 'NJ', '073': 'NJ', '074': 'NJ', '075': 'NJ', '076': 'NJ', '077': 'NJ', '078': 'NJ', '079': 'NJ',
+  '080': 'NJ', '081': 'NJ', '082': 'NJ', '083': 'NJ', '084': 'NJ', '085': 'NJ', '086': 'NJ', '087': 'NJ', '088': 'NJ', '089': 'NJ',
+  // NY
+  '100': 'NY', '101': 'NY', '102': 'NY', '103': 'NY', '104': 'NY', '105': 'NY', '106': 'NY', '107': 'NY', '108': 'NY', '109': 'NY',
+  '110': 'NY', '111': 'NY', '112': 'NY', '113': 'NY', '114': 'NY', '115': 'NY', '116': 'NY', '117': 'NY', '118': 'NY', '119': 'NY',
+  '120': 'NY', '121': 'NY', '122': 'NY', '123': 'NY', '124': 'NY', '125': 'NY', '126': 'NY', '127': 'NY', '128': 'NY', '129': 'NY',
+  '130': 'NY', '131': 'NY', '132': 'NY', '133': 'NY', '134': 'NY', '135': 'NY', '136': 'NY', '137': 'NY', '138': 'NY', '139': 'NY',
+  '140': 'NY', '141': 'NY', '142': 'NY', '143': 'NY', '144': 'NY', '145': 'NY', '146': 'NY', '147': 'NY', '148': 'NY', '149': 'NY',
+  // PA
+  '150': 'PA', '151': 'PA', '152': 'PA', '153': 'PA', '154': 'PA', '155': 'PA', '156': 'PA', '157': 'PA', '158': 'PA', '159': 'PA',
+  '160': 'PA', '161': 'PA', '162': 'PA', '163': 'PA', '164': 'PA', '165': 'PA', '166': 'PA', '167': 'PA', '168': 'PA', '169': 'PA',
+  '170': 'PA', '171': 'PA', '172': 'PA', '173': 'PA', '174': 'PA', '175': 'PA', '176': 'PA', '177': 'PA', '178': 'PA', '179': 'PA',
+  '180': 'PA', '181': 'PA', '182': 'PA', '183': 'PA', '184': 'PA', '185': 'PA', '186': 'PA', '187': 'PA', '188': 'PA', '189': 'PA',
+  '190': 'PA', '191': 'PA', '192': 'PA', '193': 'PA', '194': 'PA', '195': 'PA', '196': 'PA',
+  // DE
+  '197': 'DE', '198': 'DE', '199': 'DE',
+  // DC
+  '200': 'DC', '202': 'DC', '203': 'DC', '204': 'DC', '205': 'DC',
+  // VA
+  '201': 'VA', '220': 'VA', '221': 'VA', '222': 'VA', '223': 'VA', '224': 'VA', '225': 'VA', '226': 'VA', '227': 'VA',
+  '228': 'VA', '229': 'VA', '230': 'VA', '231': 'VA', '232': 'VA', '233': 'VA', '234': 'VA', '235': 'VA', '236': 'VA',
+  '237': 'VA', '238': 'VA', '239': 'VA', '240': 'VA', '241': 'VA', '242': 'VA', '243': 'VA', '244': 'VA', '245': 'VA', '246': 'VA',
+  // WV
+  '247': 'WV', '248': 'WV', '249': 'WV', '250': 'WV', '251': 'WV', '252': 'WV', '253': 'WV', '254': 'WV',
+  '255': 'WV', '256': 'WV', '257': 'WV', '258': 'WV', '259': 'WV', '260': 'WV', '261': 'WV', '262': 'WV', '263': 'WV', '264': 'WV', '265': 'WV', '266': 'WV', '267': 'WV', '268': 'WV',
+  // MD
+  '206': 'MD', '207': 'MD', '208': 'MD', '209': 'MD', '210': 'MD', '211': 'MD', '212': 'MD', '214': 'MD', '215': 'MD', '216': 'MD', '217': 'MD', '218': 'MD', '219': 'MD',
+  // NC
+  '270': 'NC', '271': 'NC', '272': 'NC', '273': 'NC', '274': 'NC', '275': 'NC', '276': 'NC', '277': 'NC', '278': 'NC', '279': 'NC',
+  '280': 'NC', '281': 'NC', '282': 'NC', '283': 'NC', '284': 'NC', '285': 'NC', '286': 'NC', '287': 'NC', '288': 'NC', '289': 'NC',
+  // SC
+  '290': 'SC', '291': 'SC', '292': 'SC', '293': 'SC', '294': 'SC', '295': 'SC', '296': 'SC', '297': 'SC', '298': 'SC', '299': 'SC',
+  // GA
+  '300': 'GA', '301': 'GA', '302': 'GA', '303': 'GA', '304': 'GA', '305': 'GA', '306': 'GA', '307': 'GA', '308': 'GA', '309': 'GA',
+  '310': 'GA', '311': 'GA', '312': 'GA', '313': 'GA', '314': 'GA', '315': 'GA', '316': 'GA', '317': 'GA', '318': 'GA', '319': 'GA',
+  // FL
+  '320': 'FL', '321': 'FL', '322': 'FL', '323': 'FL', '324': 'FL', '325': 'FL', '326': 'FL', '327': 'FL', '328': 'FL', '329': 'FL',
+  '330': 'FL', '331': 'FL', '332': 'FL', '333': 'FL', '334': 'FL', '335': 'FL', '336': 'FL', '337': 'FL', '338': 'FL', '339': 'FL',
+  '340': 'FL', '341': 'FL', '342': 'FL', '344': 'FL', '346': 'FL', '347': 'FL', '349': 'FL',
+  // AL
+  '350': 'AL', '351': 'AL', '352': 'AL', '354': 'AL', '355': 'AL', '356': 'AL', '357': 'AL', '358': 'AL', '359': 'AL',
+  '360': 'AL', '361': 'AL', '362': 'AL', '363': 'AL', '364': 'AL', '365': 'AL', '366': 'AL', '367': 'AL', '368': 'AL', '369': 'AL',
+  // TN
+  '370': 'TN', '371': 'TN', '372': 'TN', '373': 'TN', '374': 'TN', '376': 'TN', '377': 'TN', '378': 'TN', '379': 'TN',
+  '380': 'TN', '381': 'TN', '382': 'TN', '383': 'TN', '384': 'TN', '385': 'TN',
+  // MS
+  '386': 'MS', '387': 'MS', '388': 'MS', '389': 'MS', '390': 'MS', '391': 'MS', '392': 'MS', '393': 'MS', '394': 'MS', '395': 'MS', '396': 'MS', '397': 'MS',
+  // KY
+  '400': 'KY', '401': 'KY', '402': 'KY', '403': 'KY', '404': 'KY', '405': 'KY', '406': 'KY', '407': 'KY', '408': 'KY', '409': 'KY',
+  '410': 'KY', '411': 'KY', '412': 'KY', '413': 'KY', '414': 'KY', '415': 'KY', '416': 'KY', '417': 'KY', '418': 'KY',
+  // OH
+  '430': 'OH', '431': 'OH', '432': 'OH', '433': 'OH', '434': 'OH', '435': 'OH', '436': 'OH', '437': 'OH', '438': 'OH', '439': 'OH',
+  '440': 'OH', '441': 'OH', '442': 'OH', '443': 'OH', '444': 'OH', '445': 'OH', '446': 'OH', '447': 'OH', '448': 'OH', '449': 'OH',
+  '450': 'OH', '451': 'OH', '452': 'OH', '453': 'OH', '454': 'OH', '455': 'OH', '456': 'OH', '457': 'OH', '458': 'OH',
+  // IN
+  '460': 'IN', '461': 'IN', '462': 'IN', '463': 'IN', '464': 'IN', '465': 'IN', '466': 'IN', '467': 'IN', '468': 'IN', '469': 'IN',
+  '470': 'IN', '471': 'IN', '472': 'IN', '473': 'IN', '474': 'IN', '475': 'IN', '476': 'IN', '477': 'IN', '478': 'IN', '479': 'IN',
+  // MI
+  '480': 'MI', '481': 'MI', '482': 'MI', '483': 'MI', '484': 'MI', '485': 'MI', '486': 'MI', '487': 'MI', '488': 'MI', '489': 'MI',
+  '490': 'MI', '491': 'MI', '492': 'MI', '493': 'MI', '494': 'MI', '495': 'MI', '496': 'MI', '497': 'MI', '498': 'MI', '499': 'MI',
+  // IA
+  '500': 'IA', '501': 'IA', '502': 'IA', '503': 'IA', '504': 'IA', '505': 'IA', '506': 'IA', '507': 'IA', '508': 'IA', '509': 'IA',
+  '510': 'IA', '511': 'IA', '512': 'IA', '513': 'IA', '514': 'IA', '515': 'IA', '516': 'IA', '520': 'IA', '521': 'IA', '522': 'IA',
+  '523': 'IA', '524': 'IA', '525': 'IA', '526': 'IA', '527': 'IA', '528': 'IA',
+  // WI
+  '530': 'WI', '531': 'WI', '532': 'WI', '534': 'WI', '535': 'WI', '537': 'WI', '538': 'WI', '539': 'WI',
+  '540': 'WI', '541': 'WI', '542': 'WI', '543': 'WI', '544': 'WI', '545': 'WI', '546': 'WI', '547': 'WI', '548': 'WI', '549': 'WI',
+  // MN
+  '550': 'MN', '551': 'MN', '553': 'MN', '554': 'MN', '555': 'MN', '556': 'MN', '557': 'MN', '558': 'MN', '559': 'MN',
+  '560': 'MN', '561': 'MN', '562': 'MN', '563': 'MN', '564': 'MN', '565': 'MN', '566': 'MN', '567': 'MN',
+  // SD
+  '570': 'SD', '571': 'SD', '572': 'SD', '573': 'SD', '574': 'SD', '575': 'SD', '576': 'SD', '577': 'SD',
+  // ND
+  '580': 'ND', '581': 'ND', '582': 'ND', '583': 'ND', '584': 'ND', '585': 'ND', '586': 'ND', '587': 'ND', '588': 'ND',
+  // MT
+  '590': 'MT', '591': 'MT', '592': 'MT', '593': 'MT', '594': 'MT', '595': 'MT', '596': 'MT', '597': 'MT', '598': 'MT', '599': 'MT',
+  // IL
+  '600': 'IL', '601': 'IL', '602': 'IL', '603': 'IL', '604': 'IL', '605': 'IL', '606': 'IL', '607': 'IL', '608': 'IL', '609': 'IL',
+  '610': 'IL', '611': 'IL', '612': 'IL', '613': 'IL', '614': 'IL', '615': 'IL', '616': 'IL', '617': 'IL', '618': 'IL', '619': 'IL',
+  '620': 'IL', '622': 'IL', '623': 'IL', '624': 'IL', '625': 'IL', '626': 'IL', '627': 'IL', '628': 'IL', '629': 'IL',
+  // MO
+  '630': 'MO', '631': 'MO', '633': 'MO', '634': 'MO', '635': 'MO', '636': 'MO', '637': 'MO', '638': 'MO', '639': 'MO',
+  '640': 'MO', '641': 'MO', '644': 'MO', '645': 'MO', '646': 'MO', '647': 'MO', '648': 'MO', '649': 'MO',
+  '650': 'MO', '651': 'MO', '652': 'MO', '653': 'MO', '654': 'MO', '655': 'MO', '656': 'MO', '657': 'MO', '658': 'MO',
+  // KS
+  '660': 'KS', '661': 'KS', '662': 'KS', '664': 'KS', '665': 'KS', '666': 'KS', '667': 'KS', '668': 'KS', '669': 'KS',
+  '670': 'KS', '671': 'KS', '672': 'KS', '673': 'KS', '674': 'KS', '675': 'KS', '676': 'KS', '677': 'KS', '678': 'KS', '679': 'KS',
+  // NE
+  '680': 'NE', '681': 'NE', '683': 'NE', '684': 'NE', '685': 'NE', '686': 'NE', '687': 'NE', '688': 'NE', '689': 'NE', '690': 'NE', '691': 'NE', '692': 'NE', '693': 'NE',
+  // LA
+  '700': 'LA', '701': 'LA', '703': 'LA', '704': 'LA', '705': 'LA', '706': 'LA', '707': 'LA', '708': 'LA', '710': 'LA', '711': 'LA', '712': 'LA', '713': 'LA', '714': 'LA',
+  // AR
+  '716': 'AR', '717': 'AR', '718': 'AR', '719': 'AR', '720': 'AR', '721': 'AR', '722': 'AR', '723': 'AR', '724': 'AR', '725': 'AR', '726': 'AR', '727': 'AR', '728': 'AR', '729': 'AR',
+  // OK
+  '730': 'OK', '731': 'OK', '733': 'OK', '734': 'OK', '735': 'OK', '736': 'OK', '737': 'OK', '738': 'OK', '739': 'OK',
+  '740': 'OK', '741': 'OK', '743': 'OK', '744': 'OK', '745': 'OK', '746': 'OK', '747': 'OK', '748': 'OK', '749': 'OK',
+  // TX
+  '750': 'TX', '751': 'TX', '752': 'TX', '753': 'TX', '754': 'TX', '755': 'TX', '756': 'TX', '757': 'TX', '758': 'TX', '759': 'TX',
+  '760': 'TX', '761': 'TX', '762': 'TX', '763': 'TX', '764': 'TX', '765': 'TX', '766': 'TX', '767': 'TX', '768': 'TX', '769': 'TX',
+  '770': 'TX', '772': 'TX', '773': 'TX', '774': 'TX', '775': 'TX', '776': 'TX', '777': 'TX', '778': 'TX', '779': 'TX',
+  '780': 'TX', '781': 'TX', '782': 'TX', '783': 'TX', '784': 'TX', '785': 'TX', '786': 'TX', '787': 'TX', '788': 'TX', '789': 'TX',
+  '790': 'TX', '791': 'TX', '792': 'TX', '793': 'TX', '794': 'TX', '795': 'TX', '796': 'TX', '797': 'TX', '798': 'TX', '799': 'TX',
+  // CO
+  '800': 'CO', '801': 'CO', '802': 'CO', '803': 'CO', '804': 'CO', '805': 'CO', '806': 'CO', '807': 'CO', '808': 'CO', '809': 'CO',
+  '810': 'CO', '811': 'CO', '812': 'CO', '813': 'CO', '814': 'CO', '815': 'CO', '816': 'CO',
+  // WY
+  '820': 'WY', '821': 'WY', '822': 'WY', '823': 'WY', '824': 'WY', '825': 'WY', '826': 'WY', '827': 'WY', '828': 'WY', '829': 'WY', '831': 'WY',
+  // ID
+  '832': 'ID', '833': 'ID', '834': 'ID', '835': 'ID', '836': 'ID', '837': 'ID', '838': 'ID',
+  // UT
+  '840': 'UT', '841': 'UT', '842': 'UT', '843': 'UT', '844': 'UT', '845': 'UT', '846': 'UT', '847': 'UT',
+  // NV
+  '889': 'NV', '890': 'NV', '891': 'NV', '893': 'NV', '894': 'NV', '895': 'NV', '897': 'NV', '898': 'NV',
+  // NM
+  '870': 'NM', '871': 'NM', '873': 'NM', '874': 'NM', '875': 'NM', '877': 'NM', '878': 'NM', '879': 'NM',
+  '880': 'NM', '881': 'NM', '882': 'NM', '883': 'NM', '884': 'NM',
+  // AZ
+  '850': 'AZ', '851': 'AZ', '852': 'AZ', '853': 'AZ', '855': 'AZ', '856': 'AZ', '857': 'AZ', '859': 'AZ', '860': 'AZ', '863': 'AZ', '864': 'AZ', '865': 'AZ',
+  // AK
+  '995': 'AK', '996': 'AK', '997': 'AK', '998': 'AK', '999': 'AK',
+  // HI
+  '967': 'HI', '968': 'HI',
+  // CA
+  '900': 'CA', '901': 'CA', '902': 'CA', '903': 'CA', '904': 'CA', '905': 'CA', '906': 'CA', '907': 'CA', '908': 'CA',
+  '910': 'CA', '911': 'CA', '912': 'CA', '913': 'CA', '914': 'CA', '915': 'CA', '916': 'CA', '917': 'CA', '918': 'CA',
+  '919': 'CA', '920': 'CA', '921': 'CA', '922': 'CA', '923': 'CA', '924': 'CA', '925': 'CA', '926': 'CA', '927': 'CA', '928': 'CA',
+  '930': 'CA', '931': 'CA', '932': 'CA', '933': 'CA', '934': 'CA', '935': 'CA', '936': 'CA', '937': 'CA', '938': 'CA', '939': 'CA',
+  '940': 'CA', '941': 'CA', '942': 'CA', '943': 'CA', '944': 'CA', '945': 'CA', '946': 'CA', '947': 'CA', '948': 'CA', '949': 'CA',
+  '950': 'CA', '951': 'CA', '952': 'CA', '953': 'CA', '954': 'CA', '955': 'CA', '956': 'CA', '957': 'CA', '958': 'CA', '959': 'CA',
+  '960': 'CA', '961': 'CA',
+  // OR
+  '970': 'OR', '971': 'OR', '972': 'OR', '973': 'OR', '974': 'OR', '975': 'OR', '976': 'OR', '977': 'OR', '978': 'OR', '979': 'OR',
+  // WA
+  '980': 'WA', '981': 'WA', '982': 'WA', '983': 'WA', '984': 'WA', '985': 'WA', '986': 'WA', '988': 'WA', '989': 'WA',
+  '990': 'WA', '991': 'WA', '992': 'WA', '993': 'WA', '994': 'WA',
+};
 
-// Cache for Change.org data (URL -> { signatures, goal, timestamp })
-const changeOrgCache = new Map();
-const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+/**
+ * Derive 2-letter state code from ZIP via local_data table,
+ * falling back to USPS 3-digit prefix lookup.
+ */
+function getStateFromZip(zipCode) {
+  if (!zipCode) return null;
+  const zip = String(zipCode).trim();
 
-function fetchChangeOrgData(url) {
-  return new Promise((resolve, reject) => {
-    // Check cache first
-    const cached = changeOrgCache.get(url);
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      return resolve({ signatures: cached.signatures, goal: cached.goal });
-    }
-
-    const req = https.get(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; SolidarityNet/1.0)',
-        'Accept': 'text/html,application/xhtml+xml',
-      },
-      timeout: 8000,
-    }, (res) => {
-      // Follow redirects
-      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return fetchChangeOrgData(res.headers.location).then(resolve).catch(reject);
-      }
-      if (res.statusCode !== 200) {
-        return reject(new Error(`HTTP ${res.statusCode}`));
-      }
-
-      let body = '';
-      res.on('data', chunk => { body += chunk; });
-      res.on('end', () => {
-        try {
-          const data = parseChangeOrgPage(body);
-          if (data.signatures !== null) {
-            changeOrgCache.set(url, { ...data, timestamp: Date.now() });
-          }
-          resolve(data);
-        } catch (e) {
-          reject(e);
-        }
-      });
-    });
-
-    req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('Request timeout')); });
-  });
-}
-
-function parseChangeOrgPage(html) {
-  let signatures = null;
-  let goal = null;
-
-  // Try JSON-LD / embedded JSON patterns
-  const supportersMatch = html.match(/"supporters_count"\s*:\s*(\d+)/);
-  if (supportersMatch) {
-    signatures = parseInt(supportersMatch[1], 10);
+  // Try local_data table first (has area names with state suffix)
+  const row = db.prepare('SELECT area FROM local_data WHERE zip_code = ?').get(zip);
+  if (row && row.area) {
+    const match = row.area.match(/,\s*([A-Z]{2})$/);
+    if (match) return match[1];
   }
 
-  // Try alternate patterns
-  if (signatures === null) {
-    const totalSigsMatch = html.match(/"total_signatures"\s*:\s*(\d+)/);
-    if (totalSigsMatch) {
-      signatures = parseInt(totalSigsMatch[1], 10);
-    }
+  // Fallback: 3-digit ZIP prefix → state
+  if (zip.length >= 3) {
+    return ZIP_PREFIX_TO_STATE[zip.substring(0, 3)] || null;
   }
 
-  if (signatures === null) {
-    const sigCountMatch = html.match(/"signatureCount"\s*:\s*{[^}]*"total"\s*:\s*(\d+)/);
-    if (sigCountMatch) {
-      signatures = parseInt(sigCountMatch[1], 10);
-    }
-  }
-
-  // Try to extract from visible text patterns like "1,234 have signed"
-  if (signatures === null) {
-    const visibleMatch = html.match(/([\d,]+)\s+(?:have signed|supporters|signatures)/i);
-    if (visibleMatch) {
-      signatures = parseInt(visibleMatch[1].replace(/,/g, ''), 10);
-    }
-  }
-
-  // Try to find the goal
-  const goalMatch = html.match(/"goal"\s*:\s*(\d+)/);
-  if (goalMatch) {
-    goal = parseInt(goalMatch[1], 10);
-  }
-
-  if (goal === null) {
-    const goalTextMatch = html.match(/(?:goal|target)[:\s]+(?:of\s+)?([\d,]+)/i);
-    if (goalTextMatch) {
-      goal = parseInt(goalTextMatch[1].replace(/,/g, ''), 10);
-    }
-  }
-
-  return { signatures, goal };
-}
-
-function isValidChangeOrgUrl(url) {
-  try {
-    const parsed = new URL(url);
-    return parsed.hostname === 'www.change.org' || parsed.hostname === 'change.org';
-  } catch {
-    return false;
-  }
-}
-
-// ============================================
-// TELEGRAM INTEGRATION
-// ============================================
-
-// Cache for Telegram data (URL -> { members, timestamp })
-const telegramCache = new Map();
-const TELEGRAM_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
-
-function isValidTelegramUrl(url) {
-  if (!url || url.trim() === '') return true; // Empty is valid (optional)
-  try {
-    const parsed = new URL(url);
-    return parsed.hostname === 't.me' || parsed.hostname === 'telegram.me';
-  } catch {
-    return false;
-  }
-}
-
-function parseTelegramCount(text) {
-  // Parse counts like "1.2K", "234", "1.5M"
-  if (!text) return null;
-  const match = text.match(/([\d.]+)\s*([KMB])?/i);
-  if (!match) return null;
-  let num = parseFloat(match[1]);
-  const suffix = (match[2] || '').toUpperCase();
-  if (suffix === 'K') num *= 1000;
-  if (suffix === 'M') num *= 1000000;
-  if (suffix === 'B') num *= 1000000000;
-  return Math.round(num);
-}
-
-function parseTelegramPage(html) {
-  let members = null;
-
-  // Try to find subscriber/member count from page HTML
-  // Pattern: "X subscribers" or "X members"
-  const subscribersMatch = html.match(/([\d.,]+[KMB]?)\s*(?:subscribers|members)/i);
-  if (subscribersMatch) {
-    members = parseTelegramCount(subscribersMatch[1].replace(/,/g, ''));
-  }
-
-  // Try JSON data patterns
-  if (members === null) {
-    const membersJsonMatch = html.match(/"members_count"\s*:\s*(\d+)/);
-    if (membersJsonMatch) {
-      members = parseInt(membersJsonMatch[1], 10);
-    }
-  }
-
-  // Try meta description pattern
-  if (members === null) {
-    const metaMatch = html.match(/content="[^"]*?([\d.,]+[KMB]?)\s*(?:subscribers|members)[^"]*"/i);
-    if (metaMatch) {
-      members = parseTelegramCount(metaMatch[1].replace(/,/g, ''));
-    }
-  }
-
-  return { members };
-}
-
-function fetchTelegramData(url) {
-  return new Promise((resolve, reject) => {
-    if (!url || url.trim() === '') {
-      return resolve({ members: null });
-    }
-
-    // Check cache first
-    const cached = telegramCache.get(url);
-    if (cached && Date.now() - cached.timestamp < TELEGRAM_CACHE_TTL) {
-      return resolve({ members: cached.members });
-    }
-
-    const req = https.get(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; SolidarityNet/1.0)',
-        'Accept': 'text/html,application/xhtml+xml',
-      },
-      timeout: 8000,
-    }, (res) => {
-      // Follow redirects
-      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return fetchTelegramData(res.headers.location).then(resolve).catch(reject);
-      }
-      if (res.statusCode !== 200) {
-        return reject(new Error(`HTTP ${res.statusCode}`));
-      }
-
-      let body = '';
-      res.on('data', chunk => { body += chunk; });
-      res.on('end', () => {
-        try {
-          const data = parseTelegramPage(body);
-          if (data.members !== null) {
-            telegramCache.set(url, { ...data, timestamp: Date.now() });
-          }
-          resolve(data);
-        } catch (e) {
-          reject(e);
-        }
-      });
-    });
-
-    req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('Request timeout')); });
-  });
+  return null;
 }
 
 // ============================================
-// INFORMATION ENDPOINTS
+// ROUTES
 // ============================================
 
-// GET /api/local-data/:zipCode - Cost of living data by ZIP code
-app.get('/api/local-data/:zipCode', (req, res) => {
-  const { zipCode } = req.params;
-  let data = db.prepare('SELECT * FROM local_data WHERE zip_code = ?').get(zipCode);
-  if (!data) {
-    data = db.prepare('SELECT * FROM local_data WHERE zip_code = ?').get('default');
-  }
-  res.json({
-    medianWage: data.median_wage,
-    rent: data.rent,
-    food: data.food,
-    healthcare: data.healthcare,
-    transport: data.transport,
-    utilities: data.utilities,
-    area: data.area,
-  });
+// Economic calculator — /api/impact-calculator, /api/worth-gap-analyzer, etc.
+app.use(createEconRouter({ db, fetchCPIData, getStateFromZip }));
+
+// Data APIs — /api/economic-data/*, /api/rent-data/*, /api/map-data
+app.use(createDataRouter({ db, fetchCPIData, fetchHUDRentData, fetchHUDStateData, YEARLY_ECONOMIC_DATA, STATE_META }));
+
+// Legacy Solidarity Net — /api/petitions, /api/worker-collectives, etc.
+app.use(createLegacyRouter({ db, timeAgo, fetchChangeOrgData, isValidChangeOrgUrl, isValidTelegramUrl }));
+
+// Econ page route
+app.get('/econ', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'econ.html'));
 });
 
-// GET /api/map-data - Corporate ownership data by state for the Corporate Conquest Map
-app.get('/api/map-data', (req, res) => {
-  res.json(STATE_META);
-});
-
-// POST /api/impact-calculator - Calculate personalized economic impact metrics using year-over-year data
-// This endpoint calculates the cumulative economic gap between productivity gains and wage growth
-// over the user's working career, using rolling year-over-year economic data.
-app.post('/api/impact-calculator', (req, res) => {
-  const { start_year, start_salary, current_salary, current_rent } = req.body;
-
-  const startYear = parseInt(start_year, 10);
-  const startSalary = parseFloat(start_salary);
-  const currentSalary = parseFloat(current_salary);
-  const currentRent = parseFloat(current_rent) || 0;
-  const currentYear = new Date().getFullYear();
-
-  // Input validation
-  if (!startYear || startYear < 1975 || startYear > currentYear) {
-    return res.status(400).json({
-      error: `start_year must be between 1975 and ${currentYear}`
-    });
-  }
-  if (!startSalary || startSalary <= 0) {
-    return res.status(400).json({ error: 'start_salary must be a positive number' });
-  }
-  if (!currentSalary || currentSalary <= 0) {
-    return res.status(400).json({ error: 'current_salary must be a positive number' });
-  }
-
-  const yearsWorked = currentYear - startYear;
-
-  // ============================================
-  // INTERPOLATED GROWTH MODEL (Productivity-Wage Gap)
-  // ============================================
-  // Step 1: Generate "Standard Path" - baseline curve using CPI + seniority
-  const standardPath = [];
-  let simulatedSalary = startSalary;
-
-  for (let year = startYear; year <= currentYear; year++) {
-    const economicData = YEARLY_ECONOMIC_DATA[year];
-    if (!economicData) continue; // Skip years without data
-
-    if (year === startYear) {
-      // First year: use starting salary exactly
-      standardPath.push({ year, standardIncome: startSalary });
-    } else {
-      // Apply CPI inflation from current year's data
-      const inflationFactor = 1 + economicData.cpi_inflation;
-      simulatedSalary *= inflationFactor;
-
-      // Apply seniority growth factor (2.5% for first 15 years, 1% after)
-      const yearsOfExperience = year - startYear;
-      const seniorityGrowth = yearsOfExperience <= 15 ? 0.025 : 0.010;
-      simulatedSalary *= (1 + seniorityGrowth);
-
-      standardPath.push({ year, standardIncome: simulatedSalary });
-    }
-  }
-
-  // Step 2: Calculate "Reality Ratio" - how actual growth compares to simulated
-  const simulatedEnd = standardPath[standardPath.length - 1].standardIncome;
-  const realityRatio = currentSalary / simulatedEnd;
-
-  // Step 3: Distribute variance with linear interpolation
-  // This ensures Year 1 = start_salary exactly and Year N = current_salary exactly
-  const totalYears = standardPath.length;
-  const incomePerYear = standardPath.map(({ year, standardIncome }, index) => {
-    // Linear interpolation: Actual_Income_i = Standard_Path_i * (1 + (R - 1) * (i / Total_Years))
-    // At i=0: factor = 1, so income = standardIncome (start_salary)
-    // At i=N-1: factor = realityRatio, so income = standardIncome * R = current_salary
-    const interpolationFactor = 1 + (realityRatio - 1) * (index / (totalYears - 1 || 1));
-    const actualIncome = standardIncome * interpolationFactor;
-    return {
-      year,
-      income: actualIncome,
-      standardIncome // Keep for reference
-    };
-  });
-
-  // ============================================
-  // CALCULATE UNPAID LABOR VALUE (VALUE GAP)
-  // ============================================
-  let cumulativeProductivityGap = 0;
-  let cumulativeRentBurden = 0;
-  const yearlyBreakdown = [];
-
-  for (const { year, income, standardIncome } of incomePerYear) {
-    const economicData = YEARLY_ECONOMIC_DATA[year];
-    if (!economicData) continue; // Skip years without data
-
-    // Fair Value Formula: Fair Compensation = Actual Income * (productivity_index / wage_index)
-    // Unpaid Labor = Fair Value - Actual Income
-    const productivityWageRatio = economicData.productivity_index / economicData.wage_index;
-    const fairValue = income * productivityWageRatio;
-    const unpaidLabor = fairValue - income;
-
-    // Calculate excess rent burden for this year
-    // Only count if user's current rent burden exceeds historical baseline
-    const userRentBurden = currentRent > 0 ? (currentRent * 12) / currentSalary : 0;
-    const excessBurden = Math.max(0, userRentBurden - economicData.baseline_rent_burden);
-    const yearlyExcessRent = income * excessBurden;
-
-    cumulativeProductivityGap += unpaidLabor;
-    cumulativeRentBurden += yearlyExcessRent;
-
-    yearlyBreakdown.push({
-      year,
-      income: Math.round(income),
-      standard_path: Math.round(standardIncome),
-      productivity_index: economicData.productivity_index,
-      wage_index: economicData.wage_index,
-      fair_value: Math.round(fairValue),
-      unpaid_labor: Math.round(unpaidLabor),
-      excess_rent: Math.round(yearlyExcessRent),
-    });
-  }
-
-  const cumulativeEconomicImpact = cumulativeProductivityGap + cumulativeRentBurden;
-  const yearsOfWorkEquivalent = cumulativeEconomicImpact > 0
-    ? (cumulativeEconomicImpact / currentSalary).toFixed(1)
-    : '0.0';
-
-  // Get first and last year data for summary statistics
-  const firstYearData = YEARLY_ECONOMIC_DATA[startYear] || YEARLY_ECONOMIC_DATA[1975];
-  const lastYearData = YEARLY_ECONOMIC_DATA[currentYear] || YEARLY_ECONOMIC_DATA[2024];
-
-  const totalProductivityGrowth = ((lastYearData.productivity_index / firstYearData.productivity_index - 1) * 100).toFixed(1);
-  const totalWageGrowth = ((lastYearData.wage_index / firstYearData.wage_index - 1) * 100).toFixed(1);
-
-  // ============================================
-  // HOUSING OPPORTUNITY COST
-  // ============================================
-  const historicalData = db.prepare('SELECT * FROM historical_economic_data WHERE id = 1').get();
-  const baselineRatio = historicalData.home_price_to_income_1985; // 3.5
-  const currentRatio = historicalData.home_price_to_income_now; // 7.5
-  const medianHomePrice = currentSalary * currentRatio; // Estimated median home price today
-
-  // Calculate years to afford home then vs now
-  const yearsToAffordThen = baselineRatio;
-  const yearsToAffordNow = currentRatio;
-  const housingTimeGap = yearsToAffordNow - yearsToAffordThen;
-
-  res.json({
-    inputs: {
-      start_year: startYear,
-      start_salary: startSalary,
-      current_salary: currentSalary,
-      current_rent: currentRent,
-      years_worked: yearsWorked,
-      reality_ratio: parseFloat(realityRatio.toFixed(3)),
-      simulated_end_salary: Math.round(simulatedEnd),
-    },
-    summary: {
-      cumulative_economic_impact: Math.round(cumulativeEconomicImpact),
-      unrealized_productivity_gains: Math.round(cumulativeProductivityGap),
-      excess_rent_burden: Math.round(cumulativeRentBurden),
-      years_of_work_equivalent: parseFloat(yearsOfWorkEquivalent),
-    },
-    metrics: {
-      productivity: {
-        label: 'Productivity Growth Over Career',
-        value: `${totalProductivityGrowth}%`,
-        detail: `Productivity index grew from ${firstYearData.productivity_index.toFixed(1)} to ${lastYearData.productivity_index.toFixed(1)}`,
-      },
-      wages: {
-        label: 'Real Wage Growth Over Career',
-        value: `${totalWageGrowth}%`,
-        detail: `Wage index grew from ${firstYearData.wage_index.toFixed(1)} to ${lastYearData.wage_index.toFixed(1)}`,
-      },
-      gap: {
-        label: 'Productivity-Wage Gap',
-        value: `${(parseFloat(totalProductivityGrowth) - parseFloat(totalWageGrowth)).toFixed(1)}%`,
-        detail: `If wages had tracked productivity, your cumulative earnings would be ${Math.round(cumulativeProductivityGap)} higher`,
-      },
-      rent: {
-        label: 'Rent Burden Increase',
-        value: `${((lastYearData.baseline_rent_burden - firstYearData.baseline_rent_burden) * 100).toFixed(1)}%`,
-        detail: `Baseline rent burden increased from ${(firstYearData.baseline_rent_burden * 100).toFixed(0)}% to ${(lastYearData.baseline_rent_burden * 100).toFixed(0)}% of income`,
-      },
-      housing: {
-        label: 'Housing Time Gap',
-        value: `${housingTimeGap.toFixed(1)} years`,
-        detail: `In 1985, a median home cost ${yearsToAffordThen} years of income. Today it costs ${yearsToAffordNow} years - an additional ${housingTimeGap.toFixed(1)} years of labor required`,
-        median_home_price: Math.round(medianHomePrice),
-        baseline_ratio: baselineRatio,
-        current_ratio: currentRatio,
-      },
-    },
-    yearly_breakdown: yearlyBreakdown,
-    sources: [
-      'Economic Policy Institute (productivity-wage gap data)',
-      'Bureau of Labor Statistics (wage and CPI data)',
-      'Federal Reserve (economic indicators)',
-      'Census Bureau (housing cost trends)',
-    ],
-  });
-});
-
-// GET /api/price-resistance - All price resistance items
-app.get('/api/price-resistance', (req, res) => {
-  const items = db.prepare('SELECT * FROM price_resistance').all();
-  res.json(items.map(item => ({
-    id: item.id,
-    item: item.item,
-    current: item.current_price,
-    resistance: item.resistance_price,
-    votes: item.votes,
-    atResistance: item.at_resistance,
-  })));
-});
-
-// POST /api/price-resistance/:id/vote - Vote on a price threshold
-app.post('/api/price-resistance/:id/vote', (req, res) => {
-  const { id } = req.params;
-  const { threshold } = req.body;
-  if (threshold == null) {
-    return res.status(400).json({ error: 'threshold is required' });
-  }
-  const item = db.prepare('SELECT * FROM price_resistance WHERE id = ?').get(id);
-  if (!item) {
-    return res.status(404).json({ error: 'Item not found' });
-  }
-  db.prepare('UPDATE price_resistance SET votes = votes + 1 WHERE id = ?').run(id);
-  res.json({ success: true });
+// Methodology page route (clean URL)
+app.get('/methodology', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'methodology.html'));
 });
 
 // ============================================
-// SENTIMENT ENDPOINTS
+// ERROR HANDLING
 // ============================================
 
-// GET /api/sentiment - Get today's sentiment and history
-app.get('/api/sentiment', (req, res) => {
-  const history = db.prepare('SELECT * FROM sentiment_history ORDER BY id').all();
-
-  // Count today's votes
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-  const willing = db.prepare(
-    "SELECT COUNT(*) as count FROM sentiment_votes WHERE vote = 'yes' AND created_at >= ?"
-  ).get(todayStart.toISOString()).count;
-  const unwilling = db.prepare(
-    "SELECT COUNT(*) as count FROM sentiment_votes WHERE vote = 'no' AND created_at >= ?"
-  ).get(todayStart.toISOString()).count;
-  const total = willing + unwilling;
-
-  res.json({
-    today: { willing, unwilling, total },
-    history: history.map(h => ({
-      week: h.week,
-      willing: h.willing,
-      unwilling: h.unwilling,
-      total: h.total,
-    })),
-  });
-});
-
-// POST /api/sentiment/vote - Cast a sentiment vote
-app.post('/api/sentiment/vote', (req, res) => {
-  const { vote, fingerprint } = req.body;
-  if (!vote || !['yes', 'no'].includes(vote)) {
-    return res.status(400).json({ error: 'vote must be "yes" or "no"' });
-  }
-
-  // Check for duplicate fingerprint today
-  if (fingerprint) {
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const existing = db.prepare(
-      'SELECT id FROM sentiment_votes WHERE fingerprint = ? AND created_at >= ?'
-    ).get(fingerprint, todayStart.toISOString());
-    if (existing) {
-      return res.status(409).json({ error: 'Already voted today' });
-    }
-  }
-
-  db.prepare('INSERT INTO sentiment_votes (vote, fingerprint) VALUES (?, ?)').run(vote, fingerprint || null);
-  res.json({ success: true });
-});
-
-// ============================================
-// TENANT / BUILDING ENDPOINTS
-// ============================================
-
-// GET /api/buildings/:zipCode - Get buildings by ZIP code
-app.get('/api/buildings/:zipCode', (req, res) => {
-  const { zipCode } = req.params;
-  let buildings = db.prepare('SELECT * FROM buildings WHERE zip_code = ?').all(zipCode);
-  if (buildings.length === 0) {
-    buildings = db.prepare('SELECT * FROM buildings WHERE zip_code = ?').all('default');
-  }
-  res.json(buildings.map(b => ({
-    id: b.id,
-    address: b.address,
-    units: b.units,
-    members: b.members,
-    landlord: b.landlord,
-    issues: JSON.parse(b.issues),
-  })));
-});
-
-// POST /api/buildings/:id/join - Join a building's tenant group
-app.post('/api/buildings/:id/join', (req, res) => {
-  const { id } = req.params;
-  const building = db.prepare('SELECT * FROM buildings WHERE id = ?').get(id);
-  if (!building) {
-    return res.status(404).json({ error: 'Building not found' });
-  }
-  db.prepare('UPDATE buildings SET members = members + 1 WHERE id = ?').run(id);
-  res.json({ success: true });
-});
-
-// GET /api/buildings/:id/messages - Get messages for a building
-app.get('/api/buildings/:id/messages', (req, res) => {
-  const { id } = req.params;
-  const messages = db.prepare(
-    'SELECT * FROM tenant_messages WHERE building_id = ? ORDER BY pinned DESC, created_at DESC'
-  ).all(id);
-  res.json(messages.map(m => ({
-    id: m.id,
-    building: m.building_id,
-    text: m.text,
-    author: m.author,
-    pinned: m.pinned === 1,
-    replies: m.replies,
-    time: timeAgo(m.created_at),
-  })));
-});
-
-// POST /api/buildings/:id/messages - Post a message to a building
-app.post('/api/buildings/:id/messages', (req, res) => {
-  const { id } = req.params;
-  const { text, author } = req.body;
-  if (!text) {
-    return res.status(400).json({ error: 'text is required' });
-  }
-  const building = db.prepare('SELECT * FROM buildings WHERE id = ?').get(id);
-  if (!building) {
-    return res.status(404).json({ error: 'Building not found' });
-  }
-  const result = db.prepare(
-    'INSERT INTO tenant_messages (building_id, text, author) VALUES (?, ?, ?)'
-  ).run(id, text, author || 'Anonymous');
-  res.json({
-    id: result.lastInsertRowid,
-    building: id,
-    text,
-    author: author || 'Anonymous',
-    pinned: false,
-    replies: 0,
-    time: 'Just now',
-  });
-});
-
-// ============================================
-// WORKER COLLECTIVE ENDPOINTS
-// ============================================
-
-// GET /api/worker-collectives - List all collectives
-app.get('/api/worker-collectives', (req, res) => {
-  const collectives = db.prepare('SELECT * FROM worker_collectives ORDER BY members DESC').all();
-  res.json(collectives.map(c => ({
-    id: c.id,
-    industry: c.industry,
-    company: c.company,
-    members: c.members,
-    issues: JSON.parse(c.issues),
-    active: c.active === 1,
-    telegram_url: c.telegram_url || '',
-  })));
-});
-
-// POST /api/worker-collectives - Create a new collective
-app.post('/api/worker-collectives', (req, res) => {
-  const { company, industry, issues, telegram_url } = req.body;
-  if (!company || !industry) {
-    return res.status(400).json({ error: 'company and industry are required' });
-  }
-  if (telegram_url && !isValidTelegramUrl(telegram_url)) {
-    return res.status(400).json({ error: 'Invalid Telegram URL. Must be a t.me or telegram.me link' });
-  }
-  const id = `w${Date.now()}`;
-  db.prepare(
-    'INSERT INTO worker_collectives (id, industry, company, members, issues, active, telegram_url) VALUES (?, ?, ?, 1, ?, 0, ?)'
-  ).run(id, industry, company, JSON.stringify(issues || []), telegram_url || '');
-  res.json({
-    id,
-    industry,
-    company,
-    members: 1,
-    issues: issues || [],
-    active: false,
-    telegram_url: telegram_url || '',
-  });
-});
-
-// POST /api/worker-collectives/:id/join - Join a collective
-app.post('/api/worker-collectives/:id/join', (req, res) => {
-  const { id } = req.params;
-  const collective = db.prepare('SELECT * FROM worker_collectives WHERE id = ?').get(id);
-  if (!collective) {
-    return res.status(404).json({ error: 'Collective not found' });
-  }
-  db.prepare('UPDATE worker_collectives SET members = members + 1 WHERE id = ?').run(id);
-  res.json({ success: true });
-});
-
-// GET /api/worker-collectives/:id/messages - Get collective messages
-app.get('/api/worker-collectives/:id/messages', (req, res) => {
-  const { id } = req.params;
-  const messages = db.prepare(
-    'SELECT * FROM collective_messages WHERE collective_id = ? ORDER BY pinned DESC, created_at DESC'
-  ).all(id);
-  res.json(messages.map(m => ({
-    id: m.id,
-    collective: m.collective_id,
-    text: m.text,
-    author: m.author,
-    pinned: m.pinned === 1,
-    replies: m.replies,
-    time: timeAgo(m.created_at),
-  })));
-});
-
-// POST /api/worker-collectives/:id/messages - Post a message to a collective
-app.post('/api/worker-collectives/:id/messages', (req, res) => {
-  const { id } = req.params;
-  const { text, author } = req.body;
-  if (!text) {
-    return res.status(400).json({ error: 'text is required' });
-  }
-  const collective = db.prepare('SELECT * FROM worker_collectives WHERE id = ?').get(id);
-  if (!collective) {
-    return res.status(404).json({ error: 'Collective not found' });
-  }
-  const result = db.prepare(
-    'INSERT INTO collective_messages (collective_id, text, author) VALUES (?, ?, ?)'
-  ).run(id, text, author || 'Anonymous');
-  res.json({
-    id: result.lastInsertRowid,
-    collective: id,
-    text,
-    author: author || 'Anonymous',
-    pinned: false,
-    replies: 0,
-    time: 'Just now',
-  });
-});
-
-// ============================================
-// CONSUMER GROUP ENDPOINTS
-// ============================================
-
-// GET /api/consumer-groups - List all consumer groups
-app.get('/api/consumer-groups', (req, res) => {
-  const groups = db.prepare('SELECT * FROM consumer_groups ORDER BY members DESC').all();
-  res.json(groups.map(g => ({
-    id: g.id,
-    name: g.name,
-    members: g.members,
-    target: g.target,
-    savings: g.savings,
-    description: g.description,
-  })));
-});
-
-// POST /api/consumer-groups/:id/join - Join a consumer group
-app.post('/api/consumer-groups/:id/join', (req, res) => {
-  const { id } = req.params;
-  const group = db.prepare('SELECT * FROM consumer_groups WHERE id = ?').get(id);
-  if (!group) {
-    return res.status(404).json({ error: 'Consumer group not found' });
-  }
-  db.prepare('UPDATE consumer_groups SET members = members + 1 WHERE id = ?').run(id);
-  res.json({ success: true });
-});
-
-// ============================================
-// PETITION ENDPOINTS
-// ============================================
-
-// GET /api/petitions - List all petitions
-app.get('/api/petitions', (req, res) => {
-  const petitions = db.prepare('SELECT * FROM petitions ORDER BY created_at DESC').all();
-  res.json(petitions.map(p => ({
-    id: p.id,
-    title: p.title,
-    area: p.area,
-    description: p.description,
-    changeorg_url: p.changeorg_url,
-    signatures: p.signatures,
-    goal: p.goal,
-    status: p.status,
-    created: timeAgo(p.created_at),
-  })));
-});
-
-// POST /api/petitions - Create a petition (requires Change.org URL)
-app.post('/api/petitions', async (req, res) => {
-  const { title, area, description, changeorg_url } = req.body;
-  if (!title || !area || !changeorg_url) {
-    return res.status(400).json({ error: 'title, area, and changeorg_url are required' });
-  }
-  if (!isValidChangeOrgUrl(changeorg_url)) {
-    return res.status(400).json({ error: 'A valid Change.org URL is required' });
-  }
-
-  // Try to fetch signature data from Change.org
-  let signatures = 0;
-  let goal = 100;
-  try {
-    const data = await fetchChangeOrgData(changeorg_url);
-    if (data.signatures !== null) signatures = data.signatures;
-    if (data.goal !== null) goal = data.goal;
-  } catch {
-    // Could not reach Change.org — use defaults, will refresh later
-  }
-
-  const id = `p${Date.now()}`;
-  db.prepare(
-    'INSERT INTO petitions (id, title, area, description, changeorg_url, signatures, goal, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-  ).run(id, title, area, description || '', changeorg_url, signatures, goal, 'active');
-  res.json({
-    id,
-    title,
-    area,
-    description: description || '',
-    changeorg_url,
-    signatures,
-    goal,
-    status: 'active',
-    created: 'Just now',
-  });
-});
-
-// POST /api/petitions/:id/refresh - Refresh signature data from Change.org
-app.post('/api/petitions/:id/refresh', async (req, res) => {
-  const { id } = req.params;
-  const petition = db.prepare('SELECT * FROM petitions WHERE id = ?').get(id);
-  if (!petition) {
-    return res.status(404).json({ error: 'Petition not found' });
-  }
-  if (!petition.changeorg_url) {
-    return res.status(400).json({ error: 'No Change.org URL linked' });
-  }
-
-  try {
-    const data = await fetchChangeOrgData(petition.changeorg_url);
-    const newSigs = data.signatures !== null ? data.signatures : petition.signatures;
-    const newGoal = data.goal !== null ? data.goal : petition.goal;
-    const newStatus = newSigs >= newGoal ? 'won' : petition.status;
-    db.prepare('UPDATE petitions SET signatures = ?, goal = ?, status = ? WHERE id = ?')
-      .run(newSigs, newGoal, newStatus, id);
-    res.json({ success: true, signatures: newSigs, goal: newGoal, status: newStatus });
-  } catch {
-    res.json({ success: false, signatures: petition.signatures, goal: petition.goal, status: petition.status });
-  }
-});
-
-// ============================================
-// REPORT ENDPOINTS
-// ============================================
-
-// GET /api/reports - List all reports with optional filter
-app.get('/api/reports', (req, res) => {
-  const { type } = req.query;
-  let reports;
-  if (type && type !== 'all') {
-    reports = db.prepare('SELECT * FROM reports WHERE type = ? ORDER BY last_report DESC').all(type);
-  } else {
-    reports = db.prepare('SELECT * FROM reports ORDER BY last_report DESC').all();
-  }
-  res.json(reports.map(r => ({
-    id: r.id,
-    type: r.type,
-    name: r.name,
-    address: r.address,
-    issues: JSON.parse(r.issues),
-    reports: r.report_count,
-    lastReport: timeAgo(r.last_report),
-  })));
-});
-
-// POST /api/reports - Submit a report
-app.post('/api/reports', (req, res) => {
-  const { type, name, address, issues, description } = req.body;
-  if (!type || !name || !issues || issues.length === 0) {
-    return res.status(400).json({ error: 'type, name, and at least one issue are required' });
-  }
-
-  // Check if entity already exists
-  const existing = db.prepare(
-    'SELECT * FROM reports WHERE LOWER(name) = LOWER(?) AND type = ?'
-  ).get(name, type);
-
-  if (existing) {
-    db.prepare(
-      'UPDATE reports SET report_count = report_count + 1, last_report = CURRENT_TIMESTAMP WHERE id = ?'
-    ).run(existing.id);
-    return res.json({
-      id: existing.id,
-      type: existing.type,
-      name: existing.name,
-      address: existing.address,
-      issues: JSON.parse(existing.issues),
-      reports: existing.report_count + 1,
-      lastReport: 'Just now',
-      merged: true,
-    });
-  }
-
-  const id = `r${Date.now()}`;
-  db.prepare(
-    'INSERT INTO reports (id, type, name, address, issues, report_count) VALUES (?, ?, ?, ?, ?, 1)'
-  ).run(id, type, name, address || null, JSON.stringify(issues));
-  res.json({
-    id,
-    type,
-    name,
-    address: address || null,
-    issues,
-    reports: 1,
-    lastReport: 'Just now',
-    merged: false,
-  });
+// Global error handler — never leak stack traces or internal details to clients
+app.use((err, req, res, next) => {
+  console.error(`[${new Date().toISOString()}] ${req.method} ${req.path}:`, err.message || err);
+  res.status(500).json({ error: 'An internal error occurred. Please try again.' });
 });
 
 // ============================================
 // START SERVER
 // ============================================
 
-app.listen(PORT, () => {
-  console.log(`SOLIDARITY_NET backend running on port ${PORT}`);
+app.listen(PORT, '0.0.0.0', async () => {
+  console.log(`Ruptura backend running on port ${PORT}`);
+  console.log(`Ruptura Economic Experience available at http://localhost:${PORT}/econ`);
+
+  // Refresh hardcoded data with live API data (non-blocking)
+  // Updates STATE_WAGE_DATA and STATE_RPP in-place if APIs are available
+  try {
+    const { STATE_WAGE_DATA } = require('./services/wageData');
+    const { STATE_RPP } = require('./services/rppData');
+    const results = await refreshLiveData({ STATE_WAGE_DATA, STATE_RPP });
+    if (results.rpp) {
+      console.log('Live data refresh complete:', results);
+    } else {
+      console.log('Live data refresh: no API keys configured — using hardcoded fallback data');
+    }
+  } catch (err) {
+    console.error('Live data refresh failed (using hardcoded fallback):', err.message);
+  }
 });

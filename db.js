@@ -15,6 +15,20 @@ const DB_PATH = path.join(__dirname, 'solidarity.db');
 // - cpi_inflation: Annual CPI inflation rate (decimal, e.g., 0.05 = 5%)
 // - baseline_rent_burden: Historical rent as % of income (decimal, e.g., 0.25 = 25%)
 //
+// BASE YEAR NOTE: This table uses 1975 = 100. EPI's canonical productivity-pay
+// gap chart uses 1979 = 100. We use 1975 to cover the full range of user start
+// years (the form accepts 1975+). On EPI's 1979=100 base, 2024 values would be
+// approximately productivity ~185 and compensation ~129.
+// Deflators: CPI-U-RS for wages, IPD for productivity (EPI methodology).
+// Source: epi.org/productivity-pay-gap/
+//
+// GROSS vs NET NOTE: Our productivity_index uses gross output productivity.
+// EPI's canonical chart uses net productivity (subtracting capital depreciation).
+// This means our productivity growth since 1979 (~110%) is ~29% higher than
+// EPI's (~85%). The worth-gap calculator mitigates this by using BEA NIPA
+// labor share ratios (Fix 10 in calculationService.js) rather than applying
+// a direct percentage of the raw gap. The impact calculator's blended
+// multiplier approach with BEA VA ceilings also constrains overstatement.
 const YEARLY_ECONOMIC_DATA = {
   1975: { productivity_index: 100.0, wage_index: 100.0, cpi_inflation: 0.092, baseline_rent_burden: 0.22 },
   1976: { productivity_index: 103.2, wage_index: 102.8, cpi_inflation: 0.058, baseline_rent_burden: 0.22 },
@@ -65,7 +79,7 @@ const YEARLY_ECONOMIC_DATA = {
   2021: { productivity_index: 223.4, wage_index: 138.2, cpi_inflation: 0.047, baseline_rent_burden: 0.35 },
   2022: { productivity_index: 224.8, wage_index: 135.9, cpi_inflation: 0.080, baseline_rent_burden: 0.36 },
   2023: { productivity_index: 227.1, wage_index: 136.8, cpi_inflation: 0.041, baseline_rent_burden: 0.36 },
-  2024: { productivity_index: 229.6, wage_index: 137.5, cpi_inflation: 0.033, baseline_rent_burden: 0.37 }
+  2024: { productivity_index: 229.6, wage_index: 137.5, cpi_inflation: 0.033, baseline_rent_burden: 0.328 }
 };
 
 // ============================================
@@ -88,11 +102,12 @@ const STATE_META = {
   'TN': { corporate_pct: 22, price_to_income: 5.0 },
   'OH': { corporate_pct: 18, price_to_income: 4.2 },
   'IL': { corporate_pct: 17, price_to_income: 5.1 },
+  'IN': { corporate_pct: 16, price_to_income: 4.5 },
   'PA': { corporate_pct: 14, price_to_income: 4.8 },
   'MI': { corporate_pct: 15, price_to_income: 4.0 },
   'WA': { corporate_pct: 19, price_to_income: 7.8 },
   'CO': { corporate_pct: 21, price_to_income: 6.9 },
-  'default': { corporate_pct: 13, price_to_income: 7.5 }
+  'default': { corporate_pct: 13, price_to_income: 5.5 }
 };
 
 function initializeDatabase() {
@@ -471,7 +486,7 @@ function seedDatabase(db) {
         productivity_growth_since_1979, wage_growth_since_1979,
         median_household_income, avg_student_debt, avg_medical_debt,
         rent_pct_income_1985, rent_pct_income_now
-      ) VALUES (1, 3.5, 7.5, 69.6, 17.5, 74580, 37574, 2459, 25, 35)
+      ) VALUES (1, 3.5, 5.5, 69.6, 17.5, 74580, 37574, 2459, 25, 32.8)
     `).run();
   }
 
